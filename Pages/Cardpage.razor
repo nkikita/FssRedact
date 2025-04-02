@@ -50,10 +50,9 @@
                 <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.guid</b></RadzenText>
             }
 
-            
             <RadzenButton Click="Change" Class="rz-mt-4 rz-align-self-center" Text="@buttonText" ButtonStyle="ButtonStyle.Primary" />
             </RadzenStack>
-                <button @onclick="ExportToExcel">Сохранить данные</button>
+                <RadzenButton Click="ExportToExcel">Сохранить данные</RadzenButton>
         </RadzenStack>
 
     <RadzenStack class="gridstack">
@@ -93,8 +92,6 @@
 
 
 @code {  
-    private IBrowserFile? selectedFile;
-    private byte[]? fileData;
     string searchText = "";
     private string? editableFlat, editableGuid, value;
     private string buttonText = "Изменить";
@@ -213,23 +210,10 @@
         }
         );
     }
-    
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
-    {
-        selectedFile = e.File;
-        if (selectedFile != null)
-        {
-            using var stream = selectedFile.OpenReadStream(selectedFile.Size);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            fileData = memoryStream.ToArray();
-        }
-    }
+
 
     private async Task ExportToExcel()
     {
-        if (fileData == null) return;
-        
         using var workbook = new XLWorkbook();
         var worksheet = workbook.AddWorksheet("Данные");
 
