@@ -191,7 +191,6 @@
         }
         );
     }
-
     protected void Update_down_data(){
         ch = 2;
         DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
@@ -210,20 +209,56 @@
         }
         );
     }
-
-
     private async Task ExportToExcel()
     {
         using var workbook = new XLWorkbook();
         var worksheet = workbook.AddWorksheet("Данные");
 
-        worksheet.Cell("A1").Value = info?.first_Name;
-        worksheet.Cell("B1").Value = info?.last_Name;
-        worksheet.Cell("C1").Value = info?.middle_Name;
-        worksheet.Cell("D1").Value = info?.snils;
+        worksheet.Cell("A1").Value = "Имя";
+        worksheet.Cell("B1").Value = "Фамилия";
+        worksheet.Cell("C1").Value = "Отчество";
+        worksheet.Cell("D1").Value = "СНИЛС";
 
-        worksheet.Cell("A2").Value = userAdress?.flat;
-        worksheet.Cell("B2").Value = userAdress?.guid;
+        worksheet.Cell("A2").Value = info?.first_Name;
+        worksheet.Cell("B2").Value = info?.last_Name;
+        worksheet.Cell("C2").Value = info?.middle_Name;
+        worksheet.Cell("D2").Value = info?.snils;
+
+        worksheet.Cell("G1").Value = "Квартира";
+        worksheet.Cell("H1").Value = "GUID";
+
+        worksheet.Cell("G2").Value = userAdress?.flat;
+        worksheet.Cell("H2").Value = userAdress?.guid;
+
+        int row = 4; 
+        worksheet.Cell($"A{row}").Value = "Тип периода";
+        worksheet.Cell($"B{row}").Value = "Дата начала";
+        worksheet.Cell($"C{row}").Value = "Дата окончания";
+        int rowdat = 4;
+        worksheet.Cell($"E{row}").Value = "Тип периода1";
+        worksheet.Cell($"F{row}").Value = "Дата начала1";
+        worksheet.Cell($"G{row}").Value = "Дата окончания1";
+
+        row++;
+
+
+        foreach (var period in excludePeriod ?? new List<ExcludePeriod>())
+        {
+            worksheet.Cell($"A{row}").Value = period.period_type;
+            worksheet.Cell($"B{row}").Value = period.begin_date?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"C{row}").Value = period.end_date?.ToString("dd.MM.yyyy");
+            row++;
+        }
+
+        rowdat++;
+
+        foreach (var period in periodDate ?? new List<PeriodDate>())
+        {
+            worksheet.Cell($"E{rowdat}").Value = period.idle_average;
+            worksheet.Cell($"F{rowdat}").Value = period.period_begin?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"G{rowdat}").Value = period.period_end?.ToString("dd.MM.yyyy");
+            rowdat++;
+        }
 
         using var memoryStream = new MemoryStream();
         workbook.SaveAs(memoryStream);
@@ -233,6 +268,7 @@
 
         await JS.InvokeVoidAsync("saveAsFile", "data.xlsx", base64String);
     }
+
     
     
 }

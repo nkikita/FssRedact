@@ -16,9 +16,9 @@
                 @bind-Value="oldselectedValue"
                 Placeholder="Выберите вариант" />
 
-        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="oldbegin_date"/>
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="oldbegin_date"/>
         
-        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="oldend_date"/>
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="oldend_date"/>
 
          <RadzenLabel>Новая дата</RadzenLabel>
         <RadzenDropDown TValue="string"
@@ -28,9 +28,9 @@
                 @bind-Value="newselectedValue"
                 Placeholder="Выберите вариант" />
 
-        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="newbegin_date"/>
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newbegin_date"/>
         
-        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="newend_date"/>
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newend_date"/>
 
         <RadzenButton Click="UpdateData">Заменить</RadzenButton>
     </RadzenStack>
@@ -69,22 +69,22 @@
                  UserService.UpdateExcludePeriod(
                     userId,
                     Convert.ToInt32(oldselectedValue),
-                    DateTime.ParseExact(oldbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(oldend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     Convert.ToInt32(newselectedValue),
-                    DateTime.ParseExact(newbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(newend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
                 );
             }
             else if (ch == 2)
             {
                  UserService.UpdateDownPeriod(
                     userId,
-                    DateTime.ParseExact(oldbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(oldend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     Convert.ToInt32(oldselectedValue),
-                    DateTime.ParseExact(newbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(newend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     Convert.ToInt32(newselectedValue)
                 );
             }

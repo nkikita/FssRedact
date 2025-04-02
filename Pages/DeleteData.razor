@@ -10,9 +10,9 @@
 <RadzenCard Style="max-width: 600px; padding: 20px;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
         <RadzenLabel>дата начала периода</RadzenLabel>
-        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="Введите дату в формате yyyy-MM-dd" Name="Phone" @bind-Value=@begin_date Style="width: 100%;" aria-label="Phone" />
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@begin_date Style="width: 100%;" aria-label="Phone" />
         <RadzenLabel>дата конца периода</RadzenLabel>
-       <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="Введите дату в формате yyyy-MM-dd" Name="Phone" @bind-Value=@end_date Style="width: 100%;" aria-label="Phone" />
+       <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@end_date Style="width: 100%;" aria-label="Phone" />
         <RadzenButton Click="Delete">Удалить</RadzenButton>
     </RadzenStack>
 </RadzenCard>
@@ -35,15 +35,15 @@
             if(ch == 1 ){
                 UserService.DeleteExcludePreiod(
                     userId, 
-                    DateTime.ParseExact(begin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "yyyy-MM-dd", CultureInfo.InvariantCulture).Date
+                    DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
+                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
                 );
             }
             else if (ch ==2){
                 UserService.DeleteDownPreiod(
                     userId, 
-                    DateTime.ParseExact(begin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "yyyy-MM-dd", CultureInfo.InvariantCulture).Date
+                    DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
+                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
                 );
             }
             

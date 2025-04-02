@@ -6,13 +6,18 @@
 }
 <component type="typeof(App)" render-mode="ServerPrerendered" />
 <script>
-    function saveAsFile(fileName, byteBase64) {
-        var link = document.createElement('a');
-        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + byteBase64;
-        link.download = fileName;
+    function saveAsFile(defaultFileName, byteBase64) {
+       const link = document.createElement("a");
+    link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + byteBase64;
+
+    // Спрашиваем у пользователя название файла
+    const fileName = prompt("Введите имя файла", defaultFileName);
+    if (fileName) {
+        link.download = fileName.endsWith(".xlsx") ? fileName : fileName + ".xlsx";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
     }
 </script>
 
