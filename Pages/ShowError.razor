@@ -1,0 +1,16 @@
+@page "/ShowError/{ex}"
+@using FssRedact.Services;
+@using FssRedact.Models;
+@using System.Globalization;
+@inject UserService UserService
+@inject DialogService DialogService
+
+
+
+<RadzenStack Gap="1.5rem">
+    <RadzenLabel>@ex.Message</RadzenLabel>
+</RadzenStack>
+
+@code{
+    [Parameter] public Exception ex {get;set;}
+}

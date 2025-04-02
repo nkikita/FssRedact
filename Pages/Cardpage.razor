@@ -1,0 +1,254 @@
+@page "/{userId:int}"
+@inject IJSRuntime JS
+@using FssRedact.Services;
+@using FssRedact.Models;
+@inject UserService UserService
+@inject DialogService DialogService
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+    <RadzenStack  Orientation="Orientation.Horizontal" Gap="2rem" Style="display: flex; justify-content: space-around;">
+        
+        <RadzenStack Gap="0.5rem">
+            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Фамилия</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.first_Name</b></RadzenText>
+
+            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Имя</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.last_Name</b></RadzenText>
+
+            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Отчество</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.middle_Name</b></RadzenText>
+
+            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">СНИЛС</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.snils</b></RadzenText>
+        </RadzenStack>
+
+        <RadzenStack Gap="0.5rem">
+            <RadzenText  TextStyle="TextStyle.Overline">Квартира</RadzenText>
+            @if (IsEnabled)
+            {
+              <RadzenTextBox Style="width: 150px;" @bind-Value="editableFlat"
+               MaxLength="3" Pattern="^[0-9]{1,3}$" />
+            }
+            else
+            {
+                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.flat</b></RadzenText>
+            }
+            <RadzenText  TextStyle="TextStyle.Overline">GUID</RadzenText>
+            @if (IsEnabled)
+            {
+                <RadzenDropDown  
+                    @bind-SearchText="SearchText" 
+                    AllowFiltering="true"
+                    Data="@address" 
+                    TextProperty="@nameof(Address.VALUE)" 
+                    ValueProperty="@nameof(Address.OBJECTGUID)" 
+                    @bind-Value=editableGuid 
+                    Style="max-width: 650px;" />
+            }
+            else
+            {
+                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.guid</b></RadzenText>
+            }
+
+            
+            <RadzenButton Click="Change" Class="rz-mt-4 rz-align-self-center" Text="@buttonText" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenStack>
+                <button @onclick="ExportToExcel">Сохранить данные</button>
+        </RadzenStack>
+
+    <RadzenStack class="gridstack">
+        <RadzenLabel class="customLabels">Дата периода</RadzenLabel>
+        <RadzenRow>
+            <RadzenButton Icon="Add" Click="Add_down_data"/>
+            <RadzenButton Icon="Delete" Click="Delete_down_data"/>
+            <RadzenButton Icon="Edit" Click="Update_down_data"/>
+        </RadzenRow>
+        <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="PeriodDate" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@periodDate" class=" rz-mb-4" style="z-index: 0;">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(PeriodDate.idle_average)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.period_begin?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.period_end?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+
+    <RadzenStack class="gridstack">
+        <RadzenLabel class="customLabels">Исключить период</RadzenLabel>
+        <RadzenRow>
+            <RadzenButton Icon="Add" Click="Add_exclude_data"/>
+            <RadzenButton Icon="Delete" Click="Delete_exclude_data"/>
+            <RadzenButton Icon="Edit" Click="Update_exclude_data"/>
+        </RadzenRow>
+        <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="ExcludePeriod" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@excludePeriod" class=" rz-mb-4" style="z-index: 0;">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(ExcludePeriod.period_type)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.begin_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.end_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+    
+</RadzenStack>
+
+
+
+@code {  
+    private IBrowserFile? selectedFile;
+    private byte[]? fileData;
+    string searchText = "";
+    private string? editableFlat, editableGuid, value;
+    private string buttonText = "Изменить";
+    private int ch = 0;
+    private bool IsEnabled = false;
+    [Parameter] public int userId { get; set; }
+    private InsuredPerson? info;
+    private IEnumerable<Address>? address = new List<Address>();
+    private UserAdress? userAdress; 
+    private IEnumerable<PeriodDate>? periodDate;    
+    private IEnumerable<ExcludePeriod>? excludePeriod;
+
+    
+    public string SearchText
+    {
+        get 
+        {   
+            return searchText;
+        }
+        set{
+            searchText = value;
+            _ = OnFilterAddressChange();
+        }
+    }
+    private async Task OnFilterAddressChange()
+    {
+        address = await UserService.GetAddress(SearchText);
+        StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()     
+    {
+        excludePeriod = await UserService.GetExclPeriodAsync(userId);
+        periodDate = await UserService.GetDownPeriodAsync(userId);
+        userAdress = await UserService.GetAdressInfoAsync(userId);
+        info = await UserService.GetUserInfoAsync(userId);
+        if (info == null)
+        {
+            await DialogService.Alert("Пользователь не найден!");
+            return;
+        }
+    }
+    protected void Change()
+    {
+        if (buttonText == "Сохранить")
+        {
+            userAdress.flat = editableFlat;
+            userAdress.guid = editableGuid;
+            UserService.UpdateAdressInfoAsync(userId, editableFlat, editableGuid);
+            buttonText = "Изменить";
+            
+            //DialogService.Close();
+        }
+        else
+        {
+            editableFlat = userAdress?.flat;
+            editableGuid = userAdress?.guid;
+
+            buttonText = "Сохранить";
+        }
+        IsEnabled = !IsEnabled;
+        StateHasChanged();
+    }
+
+    protected void Delete_exclude_data(){
+        ch = 1;
+        DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+    protected void Delete_down_data(){
+        ch = 2;
+        DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+    protected void Add_down_data(){
+        ch = 2;
+        DialogService.OpenAsync<AddData>("Добавление записи к " + userId + " пользователю", new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+    protected void Add_exclude_data(){
+        ch = 1;
+        DialogService.OpenAsync<AddData>("Добавление записи к " + userId + " пользователю", new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+
+    protected void Update_down_data(){
+        ch = 2;
+        DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+    protected void Update_exclude_data(){
+        ch = 1;
+        DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch}
+        }
+        );
+    }
+    
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        if (selectedFile != null)
+        {
+            using var stream = selectedFile.OpenReadStream(selectedFile.Size);
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream);
+            fileData = memoryStream.ToArray();
+        }
+    }
+
+    private async Task ExportToExcel()
+    {
+        if (fileData == null) return;
+        
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.AddWorksheet("Данные");
+
+        worksheet.Cell("A1").Value = info?.first_Name;
+        worksheet.Cell("B1").Value = info?.last_Name;
+        worksheet.Cell("C1").Value = info?.middle_Name;
+        worksheet.Cell("D1").Value = info?.snils;
+
+        worksheet.Cell("A2").Value = userAdress?.flat;
+        worksheet.Cell("B2").Value = userAdress?.guid;
+
+        using var memoryStream = new MemoryStream();
+        workbook.SaveAs(memoryStream);
+        byte[] fileBytes = memoryStream.ToArray();
+
+        string base64String = Convert.ToBase64String(fileBytes);
+
+        await JS.InvokeVoidAsync("saveAsFile", "data.xlsx", base64String);
+    }
+    
+    
+}

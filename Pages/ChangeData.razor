@@ -1,0 +1,101 @@
+@page "/ChangeData/{userId:int}/{ch:int}"
+
+@using FssRedact.Services;
+@using FssRedact.Models;
+@using System.Globalization;
+@inject UserService UserService
+@inject DialogService DialogService
+
+<RadzenCard Style="max-width: 600px; padding: 20px;">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+        <RadzenLabel>Старая дата</RadzenLabel>
+        <RadzenDropDown TValue="string"
+                Data="@options"
+                TextProperty="Text"
+                ValueProperty="Value"
+                @bind-Value="oldselectedValue"
+                Placeholder="Выберите вариант" />
+
+        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="oldbegin_date"/>
+        
+        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="oldend_date"/>
+
+         <RadzenLabel>Новая дата</RadzenLabel>
+        <RadzenDropDown TValue="string"
+                Data="@options"
+                TextProperty="Text"
+                ValueProperty="Value"
+                @bind-Value="newselectedValue"
+                Placeholder="Выберите вариант" />
+
+        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="newbegin_date"/>
+        
+        <RadzenMask Mask="****-**-**" CharacterPattern="[0-9]" Placeholder="yyyy-MM-dd" @bind-Value="newend_date"/>
+
+        <RadzenButton Click="UpdateData">Заменить</RadzenButton>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    string? oldselectedValue;
+    string? newselectedValue;
+    private List<Option> options = new()
+    {
+        new Option { Value = "1", Text = "Работа" },
+        new Option { Value = "2", Text = "Больничный" },
+        new Option { Value = "3", Text = "Учеба" }
+    };
+
+    
+    [Parameter] public int userId { get; set; }
+    [Parameter] public int ch { get; set; }
+    string? oldbegin_date;
+    string? oldend_date;
+    string? newbegin_date;
+    string? newend_date;
+
+    private async Task UpdateData()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(newbegin_date) || string.IsNullOrEmpty(newend_date))
+            {
+                 DialogService.Alert("Введите даты корректно.");
+                return;
+            }
+
+            if (ch == 1)
+            {
+                 UserService.UpdateExcludePeriod(
+                    userId,
+                    Convert.ToInt32(oldselectedValue),
+                    DateTime.ParseExact(oldbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    Convert.ToInt32(newselectedValue),
+                    DateTime.ParseExact(newbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(newend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+                );
+            }
+            else if (ch == 2)
+            {
+                 UserService.UpdateDownPeriod(
+                    userId,
+                    DateTime.ParseExact(oldbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(oldend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    Convert.ToInt32(oldselectedValue),
+                    DateTime.ParseExact(newbegin_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateTime.ParseExact(newend_date, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    Convert.ToInt32(newselectedValue)
+                );
+            }
+
+            await DialogService.Alert("Данные успешно обновлены!");
+            DialogService.Close();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await DialogService.Alert($"Ошибка: {ex.Message}");
+        }
+    }
+}

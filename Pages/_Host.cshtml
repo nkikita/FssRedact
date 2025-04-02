@@ -1,0 +1,18 @@
+﻿@page "/"
+@namespace FssRedact.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+<component type="typeof(App)" render-mode="ServerPrerendered" />
+<script>
+    function saveAsFile(fileName, byteBase64) {
+        var link = document.createElement('a');
+        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + byteBase64;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
