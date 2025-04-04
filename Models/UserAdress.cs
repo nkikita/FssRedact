@@ -7,7 +7,7 @@ namespace FssRedact.Models
 {
     public class UserAdress
     {
-        public string? flat { get; set; }
-        public string? guid { get; set; }
+        public string? Flat { get; set; }
+        public string? Guid { get; set; }
     }
 }

@@ -7,12 +7,12 @@ namespace FssRedact.Models
 {
     public class Proactive_documents
     {
-        public int id { get; set; }  
-        public string dataxml { get; set; } = string.Empty; 
-        public DateTime datecreated { get; set; } = DateTime.Now; 
-        public DateTime datemodified { get; set; } = DateTime.Now; 
-        public string namecreated { get; set; } = string.Empty; 
-        public string namemodified { get; set; } = string.Empty; 
+        public int Id { get; set; }  
+        public string Dataxml { get; set; } = string.Empty; 
+        public DateTime Datecreated { get; set; } = DateTime.Now; 
+        public DateTime Datemodified { get; set; } = DateTime.Now; 
+        public string Namecreated { get; set; } = string.Empty; 
+        public string Namemodified { get; set; } = string.Empty; 
     
         
     }

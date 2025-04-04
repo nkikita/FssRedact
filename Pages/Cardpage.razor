@@ -10,16 +10,16 @@
         
         <RadzenStack Gap="0.5rem">
             <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Фамилия</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.first_Name</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.First_Name</b></RadzenText>
 
             <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Имя</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.last_Name</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Last_Name</b></RadzenText>
 
             <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Отчество</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.middle_Name</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Middle_Name</b></RadzenText>
 
             <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">СНИЛС</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.snils</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Snils</b></RadzenText>
         </RadzenStack>
 
         <RadzenStack Gap="0.5rem">
@@ -31,7 +31,7 @@
             }
             else
             {
-                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.flat</b></RadzenText>
+                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Flat</b></RadzenText>
             }
             <RadzenText  TextStyle="TextStyle.Overline">GUID</RadzenText>
             @if (IsEnabled)
@@ -40,14 +40,14 @@
                     @bind-SearchText="SearchText" 
                     AllowFiltering="true"
                     Data="@address" 
-                    TextProperty="@nameof(Address.VALUE)" 
-                    ValueProperty="@nameof(Address.OBJECTGUID)" 
+                    TextProperty="@nameof(Address.Value)" 
+                    ValueProperty="@nameof(Address.ObjectGUID)" 
                     @bind-Value=editableGuid 
                     Style="max-width: 650px;" />
             }
             else
             {
-                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.guid</b></RadzenText>
+                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Guid</b></RadzenText>
             }
 
             <RadzenButton Click="Change" Class="rz-mt-4 rz-align-self-center" Text="@buttonText" ButtonStyle="ButtonStyle.Primary" />
@@ -64,9 +64,9 @@
         </RadzenRow>
         <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="PeriodDate" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@periodDate" class=" rz-mb-4" style="z-index: 0;">
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(PeriodDate.idle_average)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
-                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.period_begin?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.period_end?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(PeriodDate.Idle_average)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.Period_begin?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.Period_end?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
     </RadzenStack>
@@ -80,9 +80,9 @@
         </RadzenRow>
         <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="ExcludePeriod" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@excludePeriod" class=" rz-mb-4" style="z-index: 0;">
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(ExcludePeriod.period_type)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
-                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.begin_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.end_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Property="@nameof(ExcludePeriod.Period_type)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.Begin_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.End_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
                 </Columns>
         </RadzenDataGrid>
     </RadzenStack>
@@ -137,8 +137,8 @@
     {
         if (buttonText == "Сохранить")
         {
-            userAdress.flat = editableFlat;
-            userAdress.guid = editableGuid;
+            userAdress.Flat = editableFlat;
+            userAdress.Guid = editableGuid;
             UserService.UpdateAdressInfoAsync(userId, editableFlat, editableGuid);
             buttonText = "Изменить";
             
@@ -146,8 +146,8 @@
         }
         else
         {
-            editableFlat = userAdress?.flat;
-            editableGuid = userAdress?.guid;
+            editableFlat = userAdress?.Flat;
+            editableGuid = userAdress?.Guid;
 
             buttonText = "Сохранить";
         }
@@ -219,34 +219,34 @@
         worksheet.Cell("C1").Value = "Отчество";
         worksheet.Cell("D1").Value = "СНИЛС";
 
-        worksheet.Cell("A2").Value = info?.first_Name;
-        worksheet.Cell("B2").Value = info?.last_Name;
-        worksheet.Cell("C2").Value = info?.middle_Name;
-        worksheet.Cell("D2").Value = info?.snils;
+        worksheet.Cell("A2").Value = info?.First_Name;
+        worksheet.Cell("B2").Value = info?.Last_Name;
+        worksheet.Cell("C2").Value = info?.Middle_Name;
+        worksheet.Cell("D2").Value = info?.Snils;
 
         worksheet.Cell("G1").Value = "Квартира";
         worksheet.Cell("H1").Value = "GUID";
 
-        worksheet.Cell("G2").Value = userAdress?.flat;
-        worksheet.Cell("H2").Value = userAdress?.guid;
+        worksheet.Cell("G2").Value = userAdress?.Flat;
+        worksheet.Cell("H2").Value = userAdress?.Guid;
 
         int row = 4; 
         worksheet.Cell($"A{row}").Value = "Тип периода";
         worksheet.Cell($"B{row}").Value = "Дата начала";
         worksheet.Cell($"C{row}").Value = "Дата окончания";
         int rowdat = 4;
-        worksheet.Cell($"E{row}").Value = "Тип периода1";
-        worksheet.Cell($"F{row}").Value = "Дата начала1";
-        worksheet.Cell($"G{row}").Value = "Дата окончания1";
+        worksheet.Cell($"E{row}").Value = "Тип периода";
+        worksheet.Cell($"F{row}").Value = "Дата начала";
+        worksheet.Cell($"G{row}").Value = "Дата окончания";
 
         row++;
 
 
         foreach (var period in excludePeriod ?? new List<ExcludePeriod>())
         {
-            worksheet.Cell($"A{row}").Value = period.period_type;
-            worksheet.Cell($"B{row}").Value = period.begin_date?.ToString("dd.MM.yyyy");
-            worksheet.Cell($"C{row}").Value = period.end_date?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"A{row}").Value = period.Period_type;
+            worksheet.Cell($"B{row}").Value = period.Begin_date?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"C{row}").Value = period.End_date?.ToString("dd.MM.yyyy");
             row++;
         }
 
@@ -254,9 +254,9 @@
 
         foreach (var period in periodDate ?? new List<PeriodDate>())
         {
-            worksheet.Cell($"E{rowdat}").Value = period.idle_average;
-            worksheet.Cell($"F{rowdat}").Value = period.period_begin?.ToString("dd.MM.yyyy");
-            worksheet.Cell($"G{rowdat}").Value = period.period_end?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"E{rowdat}").Value = period.Idle_average;
+            worksheet.Cell($"F{rowdat}").Value = period.Period_begin?.ToString("dd.MM.yyyy");
+            worksheet.Cell($"G{rowdat}").Value = period.Period_end?.ToString("dd.MM.yyyy");
             rowdat++;
         }
 

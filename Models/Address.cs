@@ -7,9 +7,9 @@ namespace FssRedact.Models
 {
     public class Address
     {
-        public int ID { get; set; }
-        public string? VALUE{ get; set; }
-        public string? OBJECTGUID { get; set; }
+        public int Id { get; set; }
+        public string? Value{ get; set; }
+        public string? ObjectGUID { get; set; }
         
     }
     

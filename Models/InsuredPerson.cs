@@ -7,9 +7,9 @@ namespace FssRedact.Models
 {
     public class InsuredPerson
     {
-        public string? last_Name { get; set; }
-        public string? first_Name { get; set; }
-        public string? middle_Name { get; set; }
-        public string? snils { get; set; }
+        public string? Last_Name { get; set; }
+        public string? First_Name { get; set; }
+        public string? Middle_Name { get; set; }
+        public string? Snils { get; set; }
     }
 }

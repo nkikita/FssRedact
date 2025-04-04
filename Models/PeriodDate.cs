@@ -8,9 +8,9 @@ namespace FssRedact.Models
     public class PeriodDate
     {
         
-        public DateTime? period_begin {get; set; }
-        public DateTime? period_end {get; set; }
-        public int? idle_average {get; set; }
+        public DateTime? Period_begin {get; set; }
+        public DateTime? Period_end {get; set; }
+        public int? Idle_average {get; set; }
 
     }
 }
