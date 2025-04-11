@@ -6,54 +6,72 @@
 @inject DialogService DialogService
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-    <RadzenStack  Orientation="Orientation.Horizontal" Gap="2rem" Style="display: flex; justify-content: space-around;">
-        
-        <RadzenStack Gap="0.5rem">
-            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Фамилия</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.First_Name</b></RadzenText>
+    <RadzenStack Orientation="Orientation.Horizontal"  Style="justify-content: space-around;">
 
-            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Имя</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Last_Name</b></RadzenText>
+   
+    <RadzenStack Gap="0.5rem">
+        <RadzenText class="rz-mb-0" TextStyle="TextStyle.Overline">Фамилия</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1"><b>@info?.First_Name</b></RadzenText>
 
-            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">Отчество</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Middle_Name</b></RadzenText>
+        <RadzenText class="rz-mb-0" TextStyle="TextStyle.Overline">Имя</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Last_Name</b></RadzenText>
 
-            <RadzenText class=" rz-mb-0" TextStyle="TextStyle.Overline">СНИЛС</RadzenText>
-            <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Snils</b></RadzenText>
-        </RadzenStack>
+        <RadzenText class="rz-mb-0" TextStyle="TextStyle.Overline">Отчество</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Middle_Name</b></RadzenText>
 
-        <RadzenStack Gap="0.5rem">
-            <RadzenText  TextStyle="TextStyle.Overline">Квартира</RadzenText>
-            @if (IsEnabled)
-            {
-              <RadzenTextBox Style="width: 150px;" @bind-Value="editableFlat"
-               MaxLength="3" Pattern="^[0-9]{1,3}$" />
-            }
-            else
-            {
-                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Flat</b></RadzenText>
-            }
-            <RadzenText  TextStyle="TextStyle.Overline">GUID</RadzenText>
-            @if (IsEnabled)
-            {
-                <RadzenDropDown  
-                    @bind-SearchText="SearchText" 
-                    AllowFiltering="true"
-                    Data="@address" 
-                    TextProperty="@nameof(Address.Value)" 
-                    ValueProperty="@nameof(Address.ObjectGUID)" 
-                    @bind-Value=editableGuid 
-                    Style="max-width: 650px;" />
-            }
-            else
-            {
-                <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Guid</b></RadzenText>
-            }
+        <RadzenText class="rz-mb-0" TextStyle="TextStyle.Overline">СНИЛС</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Snils</b></RadzenText>
+    </RadzenStack>
 
+    <RadzenStack Gap="0.5rem">
+        <RadzenText TextStyle="TextStyle.Overline">Квартира</RadzenText>
+        @if (IsEnabled)
+        {
+            <RadzenTextBox Style="width: 150px;" @bind-Value="editableFlat" MaxLength="3" Pattern="^[0-9]{1,3}$" />
+        }
+        else
+        {
+            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Flat</b></RadzenText>
+        }
+
+        <RadzenText TextStyle="TextStyle.Overline">GUID</RadzenText>
+        @if (IsEnabled)
+        {
+            <RadzenDropDown  
+                @bind-SearchText="SearchText" 
+                AllowFiltering="true"
+                Data="@address" 
+                TextProperty="@nameof(Address.Value)" 
+                ValueProperty="@nameof(Address.ObjectGUID)" 
+                @bind-Value=editableGuid 
+                Style="max-width: 650px;" />
+
+            <RadzenDropDown 
+                @bind-Value="value"
+                Data="@addresses"
+                LoadData="@LoadData"
+                Count="@count"
+                AllowVirtualization="true"
+                AllowClear="true"
+                Name="DropDownVirtualizationLoadData"
+                AllowFiltering="true"
+                TextProperty="Value" 
+                ValueProperty="ObjectGUID"
+                Style="width: 100%; max-width: 650px;" />
+        }
+        else
+        {
+            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Guid</b></RadzenText>
+        }
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
             <RadzenButton Click="Change" Class="rz-mt-4 rz-align-self-center" Text="@buttonText" ButtonStyle="ButtonStyle.Primary" />
-            </RadzenStack>
-                <RadzenButton Click="ExportToExcel">Сохранить данные</RadzenButton>
         </RadzenStack>
+    </RadzenStack>
+    <RadzenButton Click="ExportToExcel">Сохранить данные</RadzenButton>
+
+</RadzenStack>
+
 
     <RadzenStack class="gridstack">
         <RadzenLabel class="customLabels">Дата периода</RadzenLabel>
@@ -92,6 +110,7 @@
 
 
 @code {  
+    RadzenDropDown<string> radzenDropDown;
     string searchText = "";
     private string? editableFlat, editableGuid, value;
     private string buttonText = "Изменить";
@@ -101,10 +120,10 @@
     private InsuredPerson? info;
     private IEnumerable<Address>? address = new List<Address>();
     private UserAdress? userAdress; 
+    private Address? addr;
     private IEnumerable<PeriodDate>? periodDate;    
     private IEnumerable<ExcludePeriod>? excludePeriod;
 
-    
     public string SearchText
     {
         get 
@@ -112,8 +131,9 @@
             return searchText;
         }
         set{
-            searchText = value;
             _ = OnFilterAddressChange();
+            searchText = value;
+            
         }
     }
     private async Task OnFilterAddressChange()
@@ -121,17 +141,61 @@
         address = await UserService.GetAddress(SearchText);
         StateHasChanged();
     }
+
+    IEnumerable<Address> addresses = new List<Address>();
+        
+    string lastfilter = "";
+    int count;
+     async Task LoadData(LoadDataArgs args)
+    {
+        await Task.Yield();
+
+        // Загружаем адреса без фильтра
+        if (string.IsNullOrEmpty(args.Filter))
+        {
+            addresses = await UserService.GetAddress(searchText); // Подставляем текущий GUID
+        }
+
+        // Обнуляем skip если фильтр новый
+        if (!string.IsNullOrEmpty(args.Filter) && lastfilter != args.Filter)
+        {
+            args.Skip = 0;
+        }
+
+        // Загружаем адреса с фильтром
+        if (!string.IsNullOrEmpty(args.Filter))
+        {
+            lastfilter = args.Filter;
+            addresses = await UserService.GetAddress(args.Filter.ToLower());
+        }
+
+        count = addresses.Count();
+
+        var page = addresses
+            .Skip(args.Skip ?? 0)
+            .Take(args.Top ?? 10)
+            .ToList();
+
+        // Подгружаем выбранный адрес, если он вне диапазона
+        if (!string.IsNullOrEmpty(searchText) && !page.Any(a => a.ObjectGUID == searchText))
+        {
+            var selected = addresses.FirstOrDefault(a => a.ObjectGUID == searchText);
+            if (selected != null)
+            {
+                page.Add(selected);
+            }
+        }
+
+        addresses = page;
+    }
+
+    
     protected override async Task OnInitializedAsync()     
     {
         excludePeriod = await UserService.GetExclPeriodAsync(userId);
         periodDate = await UserService.GetDownPeriodAsync(userId);
         userAdress = await UserService.GetAdressInfoAsync(userId);
         info = await UserService.GetUserInfoAsync(userId);
-        if (info == null)
-        {
-            await DialogService.Alert("Пользователь не найден!");
-            return;
-        }
     }
     protected void Change()
     {
@@ -142,7 +206,6 @@
             UserService.UpdateAdressInfoAsync(userId, editableFlat, editableGuid);
             buttonText = "Изменить";
             
-            //DialogService.Close();
         }
         else
         {
@@ -268,7 +331,4 @@
 
         await JS.InvokeVoidAsync("saveAsFile", "data.xlsx", base64String);
     }
-
-    
-    
 }
