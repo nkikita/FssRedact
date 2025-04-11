@@ -153,7 +153,7 @@
         // Загружаем адреса без фильтра
         if (string.IsNullOrEmpty(args.Filter))
         {
-            addresses = await UserService.GetAddress(searchText); // Подставляем текущий GUID
+            addresses = await UserService.GetAddress(value); // Подставляем текущий GUID
         }
 
         // Обнуляем skip если фильтр новый
@@ -177,9 +177,9 @@
             .ToList();
 
         // Подгружаем выбранный адрес, если он вне диапазона
-        if (!string.IsNullOrEmpty(searchText) && !page.Any(a => a.ObjectGUID == searchText))
+        if (!string.IsNullOrEmpty(value) && !page.Any(a => a.ObjectGUID == value))
         {
-            var selected = addresses.FirstOrDefault(a => a.ObjectGUID == searchText);
+            var selected = addresses.FirstOrDefault(a => a.ObjectGUID == value);
             if (selected != null)
             {
                 page.Add(selected);
