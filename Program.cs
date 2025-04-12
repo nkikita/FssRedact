@@ -11,6 +11,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddHttpClient<UserService>();
+builder.Services.AddScoped<AddressService>();
+builder.Services.AddHttpClient("GetAddress", client => client.BaseAddress = new Uri("https://data.pbprog.ru/api/address/full-address/"));
+builder.Services.AddScoped<AddressService>();
 
 
 

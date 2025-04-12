@@ -36,19 +36,6 @@ namespace FssRedact.Services
             return quer.FirstOrDefault();
         }
 
-        public async Task<IEnumerable<Address>> GetAddress(string text)
-        {
-            
-            string url = $"https://data.pbprog.ru/api/address/full-address/parse?addressText={text}&token=939358a987eb492cb4adc68ee9944fb014f184db";
-
-            HttpResponseMessage response = await _httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            string jsonResponse = await response.Content.ReadAsStringAsync();
-            var addresses = JsonSerializer.Deserialize<IEnumerable<Address>>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            return addresses ?? new List<Address>();
-        }
 
 
          public async Task<UserAdress?> GetAdressInfoAsync(int? userId)

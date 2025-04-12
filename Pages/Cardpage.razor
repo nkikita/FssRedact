@@ -4,6 +4,7 @@
 @using FssRedact.Models;
 @inject UserService UserService
 @inject DialogService DialogService
+@inject AddressService AddressService
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
     <RadzenStack Orientation="Orientation.Horizontal"  Style="justify-content: space-around;">
@@ -37,31 +38,21 @@
         <RadzenText TextStyle="TextStyle.Overline">GUID</RadzenText>
         @if (IsEnabled)
         {
-            <RadzenDropDown  
-                @bind-SearchText="SearchText" 
-                AllowFiltering="true"
-                Data="@address" 
-                TextProperty="@nameof(Address.Value)" 
-                ValueProperty="@nameof(Address.ObjectGUID)" 
-                @bind-Value=editableGuid 
-                Style="max-width: 650px;" />
-
-            <RadzenDropDown 
-                @bind-Value="value"
-                Data="@addresses"
-                LoadData="@LoadData"
-                Count="@count"
-                AllowVirtualization="true"
-                AllowClear="true"
-                Name="DropDownVirtualizationLoadData"
-                AllowFiltering="true"
-                TextProperty="Value" 
-                ValueProperty="ObjectGUID"
-                Style="width: 100%; max-width: 650px;" />
+             <RadzenDropDown @bind-Value=editableGuid 
+                Data=@getAddress 
+                LoadData=@LoadData 
+                Count="@count" 
+                AllowVirtualization="true" 
+                AllowClear="true" 
+                Name="DropDownVirtualizationLoadData"   
+                AllowFiltering="true" 
+                TextProperty="@nameof(Address.Value)"
+                ValueProperty="@nameof(Address.ObjectGUID)"
+                Style="width: 100%; max-width: 400px;" />
         }
         else
         {
-            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Guid</b></RadzenText>
+            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@address.FirstOrDefault(x => x.ObjectGUID == editableGuid)?.Value</b></RadzenText>
         }
 
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
@@ -110,9 +101,8 @@
 
 
 @code {  
-    RadzenDropDown<string> radzenDropDown;
     string searchText = "";
-    private string? editableFlat, editableGuid, value;
+    private string? editableFlat, editableGuid, value, lastfilter;
     private string buttonText = "Изменить";
     private int ch = 0;
     private bool IsEnabled = false;
@@ -120,81 +110,62 @@
     private InsuredPerson? info;
     private IEnumerable<Address>? address = new List<Address>();
     private UserAdress? userAdress; 
-    private Address? addr;
     private IEnumerable<PeriodDate>? periodDate;    
     private IEnumerable<ExcludePeriod>? excludePeriod;
-
-    public string SearchText
-    {
-        get 
-        {   
-            return searchText;
-        }
-        set{
-            _ = OnFilterAddressChange();
-            searchText = value;
-            
-        }
-    }
-    private async Task OnFilterAddressChange()
-    {
-        address = await UserService.GetAddress(SearchText);
-        StateHasChanged();
-    }
-
-    IEnumerable<Address> addresses = new List<Address>();
-        
-    string lastfilter = "";
+    string token = "939358a987eb492cb4adc68ee9944fb014f184db";    
     int count;
-     async Task LoadData(LoadDataArgs args)
+    private IEnumerable<Address> getAddress = new List<Address>();
+
+    async Task LoadData(LoadDataArgs args)
     {
         await Task.Yield();
 
-        // Загружаем адреса без фильтра
-        if (string.IsNullOrEmpty(args.Filter))
-        {
-            addresses = await UserService.GetAddress(value); // Подставляем текущий GUID
-        }
+        string filter = args.Filter?.ToLower() ?? string.Empty;
 
-        // Обнуляем skip если фильтр новый
-        if (!string.IsNullOrEmpty(args.Filter) && lastfilter != args.Filter)
+        if (lastfilter != filter)
         {
             args.Skip = 0;
+            lastfilter = filter;
         }
 
-        // Загружаем адреса с фильтром
-        if (!string.IsNullOrEmpty(args.Filter))
+        try
         {
-            lastfilter = args.Filter;
-            addresses = await UserService.GetAddress(args.Filter.ToLower());
+            getAddress = string.IsNullOrWhiteSpace(filter)
+                ? await AddressService.GetAddressList(value, token)
+                : await AddressService.GetAddressList(filter, token);
+            count = getAddress.Count();
+
+            int skip = args.Skip ?? 0;
+            int top = args.Top ?? 10;
+            address = getAddress.Skip(skip).Take(top).ToList();
+
+            var selected = getAddress.FirstOrDefault(c => c.ObjectGUID == value);
+
+            Console.WriteLine($"Filter: {filter}, Skip: {args.Skip}, Top: {args.Top}");
+
+            value = selected.Value;
+            
         }
-
-        count = addresses.Count();
-
-        var page = addresses
-            .Skip(args.Skip ?? 0)
-            .Take(args.Top ?? 10)
-            .ToList();
-
-        // Подгружаем выбранный адрес, если он вне диапазона
-        if (!string.IsNullOrEmpty(value) && !page.Any(a => a.ObjectGUID == value))
+        catch (Exception ex)
         {
-            var selected = addresses.FirstOrDefault(a => a.ObjectGUID == value);
-            if (selected != null)
-            {
-                page.Add(selected);
-            }
+            Console.WriteLine($"Ошибка загрузки данных: {ex.Message}");
+            // Можно здесь пробросить исключение или просто залогировать
         }
-
-        addresses = page;
     }
 
+
+    private void SetValue(){
+
+    }
     
     protected override async Task OnInitializedAsync()     
     {
         excludePeriod = await UserService.GetExclPeriodAsync(userId);
         periodDate = await UserService.GetDownPeriodAsync(userId);
         userAdress = await UserService.GetAdressInfoAsync(userId);
+        editableFlat = userAdress?.Flat;
+        editableGuid = userAdress?.Guid;
+        address = await AddressService.GetAddressList(editableGuid, token);
         info = await UserService.GetUserInfoAsync(userId);
     }
     protected void Change()
@@ -209,9 +180,6 @@
         }
         else
         {
-            editableFlat = userAdress?.Flat;
-            editableGuid = userAdress?.Guid;
-
             buttonText = "Сохранить";
         }
         IsEnabled = !IsEnabled;
