@@ -8,9 +8,16 @@
 
 
 <RadzenStack Gap="1.5rem">
-    <RadzenLabel>@ex.Message</RadzenLabel>
+    @if (ex != null)
+    {
+        <RadzenLabel>@ex.Message</RadzenLabel>
+    }
+    else
+    {
+        <RadzenLabel>Произошла неизвестная ошибка.</RadzenLabel>
+    }
 </RadzenStack>
 
-@code{
-    [Parameter] public Exception ex {get;set;}
+@code {
+    [Parameter] public Exception? ex { get; set; }
 }

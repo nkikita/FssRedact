@@ -1,5 +1,6 @@
 @page "/DeleteData/{userId, ch}"
 
+@using FssRedact.Helpers;
 @using FssRedact.Services;
 @using FssRedact.Models;
 @using System.Globalization;
@@ -9,11 +10,25 @@
 
 <RadzenCard Style="max-width: 600px; padding: 20px;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-        <RadzenLabel>дата начала периода</RadzenLabel>
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@begin_date Style="width: 100%;" aria-label="Phone" />
-        <RadzenLabel>дата конца периода</RadzenLabel>
-       <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@end_date Style="width: 100%;" aria-label="Phone" />
-        <RadzenButton Click="Delete">Удалить</RadzenButton>
+        <RadzenLabel>Дата начала периода</RadzenLabel>
+        <RadzenMask Mask="**-**-****"
+                    CharacterPattern="[0-9]"
+                    Placeholder="Введите дату в формате dd-MM-yyyy"
+                    Name="beginDate"
+                    @bind-Value="begin_date"
+                    Style="width: 100%;"
+                    @onblur="ValidateBeginDate" />
+        <RadzenLabel Text="@beginDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(beginDateError))" />
+
+        <RadzenLabel>Дата конца периода</RadzenLabel>
+        <RadzenMask Mask="**-**-****"
+                    CharacterPattern="[0-9]"
+                    Placeholder="Введите дату в формате dd-MM-yyyy"
+                    Name="endDate"
+                    @bind-Value="end_date"
+                    Style="width: 100%;"
+                    @onblur="ValidateEndDate" />
+        <RadzenLabel Text="@endDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(endDateError))" />
     </RadzenStack>
 </RadzenCard>
 
@@ -23,6 +38,25 @@
     
     [Parameter] public int userId { get; set; }
     [Parameter] public int ch {get; set;}
+    string? beginDateError;
+    string? endDateError;
+
+    private void ValidateBeginDate(FocusEventArgs args)
+    {
+        beginDateError = DateValidationHelper.ValidateSingleDate(begin_date);
+    }
+
+    private void ValidateEndDate(FocusEventArgs args)
+    {
+        endDateError = DateValidationHelper.ValidateSingleDate(end_date);
+
+        if (string.IsNullOrEmpty(beginDateError) && string.IsNullOrEmpty(endDateError))
+        {
+            var rangeError = DateValidationHelper.ValidateDateRange(begin_date, end_date);
+            if (!string.IsNullOrEmpty(rangeError))
+                endDateError = rangeError;
+        }
+    }
 
     private void Delete(){
         
@@ -32,14 +66,14 @@
                 DialogService.Close(); 
             }
             else{
-            if(ch == 1 ){
+            if(ch == 1 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
                 UserService.DeleteExcludePreiod(
                     userId, 
                     DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
                     DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
                 );
             }
-            else if (ch ==2){
+            else if (ch ==2 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
                 UserService.DeleteDownPreiod(
                     userId, 
                     DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 

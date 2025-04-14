@@ -1,6 +1,7 @@
 @page "/AddData/{userId, ch}"
 
 @using FssRedact.Services;
+@using FssRedact.Helpers;
 @using FssRedact.Models;
 @using System.Globalization;
 @inject UserService UserService
@@ -13,16 +14,34 @@
                 TextProperty="Text"
                 ValueProperty="Value"
                 @bind-Value="selectedValue"
-                Placeholder="Выберите вариант" /><RadzenLabel>дата начала периода</RadzenLabel>
-        <RadzenMask  Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@begin_date Style="width: 100%;" aria-label="Phone" />
-        <RadzenLabel>дата конца периода</RadzenLabel>
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="Введите дату в формате dd-MM-yyyy" Name="Phone" @bind-Value=@end_date Style="width: 100%;" aria-label="Phone" />
+                Placeholder="Выберите вариант" />
+
+        <RadzenLabel>Дата начала периода</RadzenLabel>
+        <RadzenMask Mask="**-**-****"
+                    CharacterPattern="[0-9]"
+                    Placeholder="Введите дату в формате dd-MM-yyyy"
+                    Name="beginDate"
+                    @bind-Value="begin_date"
+                    Style="width: 100%;"
+                    @onblur="ValidateBeginDate" />
+        <RadzenLabel Text="@beginDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(beginDateError))" />
+
+        <RadzenLabel>Дата конца периода</RadzenLabel>
+        <RadzenMask Mask="**-**-****"
+                    CharacterPattern="[0-9]"
+                    Placeholder="Введите дату в формате dd-MM-yyyy"
+                    Name="endDate"
+                    @bind-Value="end_date"
+                    Style="width: 100%;"
+                    @onblur="ValidateEndDate" />
+        <RadzenLabel Text="@endDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(endDateError))" />
+
         <RadzenButton Click="AddDatas">Записать</RadzenButton>
     </RadzenStack>
 </RadzenCard>
 
 @code{
-  private List<Option> options = new()
+    private List<Option> options = new()
     {
         new Option { Value = "1", Text = "Работа" },
         new Option { Value = "2", Text = "Больничный" },
@@ -34,6 +53,32 @@
 
     string? begin_date;
     string? end_date;
+    string? beginDateError;
+    string? endDateError;
+
+    private void ValidateBeginDate(FocusEventArgs args)
+    {
+        beginDateError = DateValidationHelper.ValidateSingleDate(begin_date);
+    }
+
+    private void ValidateEndDate(FocusEventArgs args)
+    {
+        endDateError = DateValidationHelper.ValidateSingleDate(end_date);
+
+        if (string.IsNullOrEmpty(beginDateError) && string.IsNullOrEmpty(endDateError))
+        {
+            var rangeError = DateValidationHelper.ValidateDateRange(begin_date, end_date);
+            if (!string.IsNullOrEmpty(rangeError))
+                endDateError = rangeError;
+        }
+    }
+
+
+    private bool TryParseDate(string? date, out DateTime result)
+    {
+        return DateTime.TryParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+    }
+
 
     private void AddDatas(){
 
@@ -42,7 +87,7 @@
                 DialogService.Close(); 
             }
             else{
-            if(ch == 1 ){
+            if(ch == 1 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
                 UserService.AddExcludePreiod(
                     userId, 
                     DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
@@ -50,7 +95,7 @@
                     Convert.ToInt32(selectedValue)
                 );
             }
-            else if (ch ==2){
+            else if (ch ==2 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
                 UserService.AddDownPreiod(
                     userId, 
                     DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 

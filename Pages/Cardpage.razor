@@ -34,25 +34,27 @@
         {
             <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Flat</b></RadzenText>
         }
-
         <RadzenText TextStyle="TextStyle.Overline">GUID</RadzenText>
         @if (IsEnabled)
         {
-             <RadzenDropDown @bind-Value=editableGuid 
-                Data=@getAddress 
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenDropDown 
+                @bind-Value=value 
+                Data=@address 
                 LoadData=@LoadData 
                 Count="@count" 
                 AllowVirtualization="true" 
                 AllowClear="true" 
-                Name="DropDownVirtualizationLoadData"   
+                Name="DropDownVirtualizationLoadData"
                 AllowFiltering="true" 
                 TextProperty="@nameof(Address.Value)"
-                ValueProperty="@nameof(Address.ObjectGUID)"
-                Style="width: 100%; max-width: 400px;" />
+                ValueProperty="@nameof(Address.ObjectGUID)" 
+                Style="width: 100%; max-width: 1000px;" />
+                </RadzenStack>
         }
-        else
+          else
         {
-            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@address.FirstOrDefault(x => x.ObjectGUID == editableGuid)?.Value</b></RadzenText>
+            <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@searchText</b></RadzenText>
         }
 
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
@@ -102,83 +104,86 @@
 
 @code {  
     string searchText = "";
-    private string? editableFlat, editableGuid, value, lastfilter;
+    private string? editableFlat, editableGuid, lastfilter;
+    string? value = "";
     private string buttonText = "Изменить";
     private int ch = 0;
     private bool IsEnabled = false;
     [Parameter] public int userId { get; set; }
     private InsuredPerson? info;
-    private IEnumerable<Address>? address = new List<Address>();
+    private IEnumerable<Address>? address;
     private UserAdress? userAdress; 
     private IEnumerable<PeriodDate>? periodDate;    
     private IEnumerable<ExcludePeriod>? excludePeriod;
     string token = "939358a987eb492cb4adc68ee9944fb014f184db";    
     int count;
-    private IEnumerable<Address> getAddress = new List<Address>();
+    private IEnumerable<Address>? getAddress;
 
     async Task LoadData(LoadDataArgs args)
     {
         await Task.Yield();
-
-        string filter = args.Filter?.ToLower() ?? string.Empty;
-
-        if (lastfilter != filter)
+       
+        if (string.IsNullOrEmpty(args.Filter) )
+        {
+            getAddress = await AddressService.GetAddressList(value, token); // string value ="01cf0f7b-70fe-4804-8320-4cb3edb21354"; -- значение из xml
+        }
+        
+        
+        if (!string.IsNullOrEmpty(args.Filter) && lastfilter != args.Filter)
         {
             args.Skip = 0;
-            lastfilter = filter;
         }
 
-        try
+
+        if (!string.IsNullOrEmpty(args.Filter))
         {
-            getAddress = string.IsNullOrWhiteSpace(filter)
-                ? await AddressService.GetAddressList(value, token)
-                : await AddressService.GetAddressList(filter, token);
-            count = getAddress.Count();
-
-            int skip = args.Skip ?? 0;
-            int top = args.Top ?? 10;
-            address = getAddress.Skip(skip).Take(top).ToList();
-
-            var selected = getAddress.FirstOrDefault(c => c.ObjectGUID == value);
-
-            Console.WriteLine($"Filter: {filter}, Skip: {args.Skip}, Top: {args.Top}");
-
-            
+            lastfilter = args.Filter;
+           // query = query.Where(c => c.CustomerID.ToLower().Contains(args.Filter.ToLower()) || c.ContactName.ToLower().Contains(args.Filter.ToLower()) || c.CompanyName.ToLower().Contains(args.Filter.ToLower()));
+            getAddress = await AddressService.GetAddressList(args.Filter.ToLower().ToString(), token);
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка загрузки данных: {ex.Message}");
-            // Можно здесь пробросить исключение или просто залогировать
-        }
-    }
-
-
-    private void SetValue(){
-
-    }
+        count = await Task.FromResult(getAddress?.Count() ?? 0);
+        //count = await Task.FromResult(query.Count());
+        address = await Task.FromResult((getAddress ?? Enumerable.Empty<Address>()).Skip(args.Skip ?? 0).Take(args.Top ?? 10).ToList());
+        //customers = await Task.FromResult(query.Skip(args.Skip.HasValue ? args.Skip.Value : 0).Take(args.Top.HasValue ? args.Top.Value : 10).ToList());
     
+        // Load selected items if outside of visible range
+        if (!string.IsNullOrEmpty(value) && !address.Any(c => c.ObjectGUID == value))
+        {
+            var selected = await Task.FromResult(getAddress?.Where(c => c.ObjectGUID == value));
+            address = address.Concat(selected ?? Enumerable.Empty<Address>());
+
+        }
+    }
     protected override async Task OnInitializedAsync()     
     {
-        excludePeriod = await UserService.GetExclPeriodAsync(userId);
-        periodDate = await UserService.GetDownPeriodAsync(userId);
-        userAdress = await UserService.GetAdressInfoAsync(userId);
-        editableFlat = userAdress?.Flat;
-        editableGuid = userAdress?.Guid;
-        address = await AddressService.GetAddressList(editableGuid, token);
-        info = await UserService.GetUserInfoAsync(userId);
+        if (UserService != null)
+        {
+            excludePeriod = await UserService?.GetExclPeriodAsync(userId);
+            periodDate = await UserService.GetDownPeriodAsync(userId);
+            userAdress = await UserService.GetAdressInfoAsync(userId);
+            editableFlat = userAdress?.Flat;
+            editableGuid = userAdress?.Guid;
+            value = editableGuid;
+            address = await AddressService.GetAddressList(editableGuid, token);
+            searchText = address?.FirstOrDefault()?.Value ?? string.Empty;
+            info = await UserService.GetUserInfoAsync(userId);
+        }
     }
     protected void Change()
     {
-        if (buttonText == "Сохранить")
+        if (buttonText == "Сохранить" && !string.IsNullOrWhiteSpace(userAdress.Flat) )
         {
             userAdress.Flat = editableFlat;
             userAdress.Guid = editableGuid;
-            UserService.UpdateAdressInfoAsync(userId, editableFlat, editableGuid);
+            searchText = address.FirstOrDefault()?.Value;
+            UserService.UpdateAdressInfoAsync(userId, editableFlat, value);
             buttonText = "Изменить";
             
         }
         else
         {
+            editableFlat = userAdress?.Flat;
+            editableGuid = userAdress?.Guid;
             buttonText = "Сохранить";
         }
         IsEnabled = !IsEnabled;
@@ -258,7 +263,7 @@
         worksheet.Cell("H1").Value = "GUID";
 
         worksheet.Cell("G2").Value = userAdress?.Flat;
-        worksheet.Cell("H2").Value = userAdress?.Guid;
+        worksheet.Cell("H2").Value = searchText;
 
         int row = 4; 
         worksheet.Cell($"A{row}").Value = "Тип периода";

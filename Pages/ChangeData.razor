@@ -1,5 +1,6 @@
 @page "/ChangeData/{userId:int}/{ch:int}"
 
+@using FssRedact.Helpers;
 @using FssRedact.Services;
 @using FssRedact.Models;
 @using System.Globalization;
@@ -53,6 +54,8 @@
     string? oldend_date;
     string? newbegin_date;
     string? newend_date;
+
+    
 
     private async Task UpdateData()
     {
