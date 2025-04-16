@@ -100,8 +100,6 @@
     
 </RadzenStack>
 
-
-
 @code {  
     string searchText = "";
     private string? editableFlat, editableGuid, lastfilter;
@@ -119,41 +117,36 @@
     int count;
     private IEnumerable<Address>? getAddress;
 
-    async Task LoadData(LoadDataArgs args)
-    {
-        await Task.Yield();
-       
-        if (string.IsNullOrEmpty(args.Filter) )
-        {
-            getAddress = await AddressService.GetAddressList(value, token); // string value ="01cf0f7b-70fe-4804-8320-4cb3edb21354"; -- значение из xml
-        }
-        
-        
-        if (!string.IsNullOrEmpty(args.Filter) && lastfilter != args.Filter)
-        {
-            args.Skip = 0;
-        }
-
-
-        if (!string.IsNullOrEmpty(args.Filter))
-        {
-            lastfilter = args.Filter;
-           // query = query.Where(c => c.CustomerID.ToLower().Contains(args.Filter.ToLower()) || c.ContactName.ToLower().Contains(args.Filter.ToLower()) || c.CompanyName.ToLower().Contains(args.Filter.ToLower()));
-            getAddress = await AddressService.GetAddressList(args.Filter.ToLower().ToString(), token);
-        }
-        count = await Task.FromResult(getAddress?.Count() ?? 0);
-        //count = await Task.FromResult(query.Count());
-        address = await Task.FromResult((getAddress ?? Enumerable.Empty<Address>()).Skip(args.Skip ?? 0).Take(args.Top ?? 10).ToList());
-        //customers = await Task.FromResult(query.Skip(args.Skip.HasValue ? args.Skip.Value : 0).Take(args.Top.HasValue ? args.Top.Value : 10).ToList());
+  async Task LoadData(LoadDataArgs args)
+{
+    await Task.Yield();
     
-        // Load selected items if outside of visible range
-        if (!string.IsNullOrEmpty(value) && !address.Any(c => c.ObjectGUID == value))
-        {
-            var selected = await Task.FromResult(getAddress?.Where(c => c.ObjectGUID == value));
-            address = address.Concat(selected ?? Enumerable.Empty<Address>());
-
-        }
+    if (string.IsNullOrEmpty(args.Filter))
+    {
+        getAddress = await AddressService.GetAddressList(value, token); 
     }
+
+    if (!string.IsNullOrEmpty(args.Filter) && lastfilter != args.Filter)
+    {
+        args.Skip = 0;
+    }
+
+    if (!string.IsNullOrEmpty(args.Filter))
+    {
+        lastfilter = args.Filter;
+        getAddress = await AddressService.GetAddressList(args.Filter.ToLower().ToString(), token);
+    }
+
+    count = await Task.FromResult(getAddress?.Count() ?? 0);
+    address = await Task.FromResult((getAddress ?? Enumerable.Empty<Address>()).Skip(args.Skip ?? 0).Take(args.Top ?? 10).ToList());
+
+    if (!string.IsNullOrEmpty(value) && !address.Any(c => c.ObjectGUID == value))
+    {
+        var selected = await Task.FromResult(getAddress?.Where(c => c.ObjectGUID == value));
+        address = address.Concat(selected ?? Enumerable.Empty<Address>());
+    }
+}
+
     protected override async Task OnInitializedAsync()     
     {
         if (UserService != null)

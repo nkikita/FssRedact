@@ -41,7 +41,14 @@ namespace FssRedact.Services
             OnGetAddressList(request);
 
             var response = await httpClient.SendAsync(request);
+            Console.WriteLine($"Отправка запроса: адрес={addr}, токен={token}");
+            Console.WriteLine($"Код ответа: {response.StatusCode}");
 
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorDetails = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ошибка от сервера: {errorDetails}");
+            }
             response.EnsureSuccessStatusCode();
 
             OnGetAddressListResponse(response);

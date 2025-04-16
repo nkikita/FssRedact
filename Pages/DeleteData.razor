@@ -29,6 +29,9 @@
                     Style="width: 100%;"
                     @onblur="ValidateEndDate" />
         <RadzenLabel Text="@endDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(endDateError))" />
+
+        
+        <RadzenButton Click="Delete">Удалить</RadzenButton>
     </RadzenStack>
 </RadzenCard>
 
