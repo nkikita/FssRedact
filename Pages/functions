@@ -1,0 +1,206 @@
+создание таблицы
+CREATE TABLE proactive_documents (
+    id SERIAL PRIMARY KEY,
+    dataxml XML NOT NULL,
+    datecreated TIMESTAMP DEFAULT now(),
+    datemodified TIMESTAMP DEFAULT now(),
+    namecreated VARCHAR(255) NOT NULL,
+    namemodified VARCHAR(255) NOT NULL
+);
+
+
+первая функция 
+CREATE OR REPLACE FUNCTION get_insured_info(doc_id INT)
+RETURNS TABLE (last_name TEXT, first_name TEXT, middle_name TEXT, snils TEXT) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:lastName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS last_name,
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:firstName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS first_name,
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:middleName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS middle_name,
+        COALESCE(array_to_string(xpath('//ns3:snils/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), ''), '') AS snils
+    FROM proactive_documents 
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+вторая функция 
+CREATE OR REPLACE FUNCTION get_insured_address(doc_id INT)
+RETURNS TABLE (flat TEXT, guid TEXT) AS $$  
+BEGIN  
+    RETURN QUERY  
+    SELECT  
+        COALESCE(NULLIF(array_to_string(xpath('//*[local-name()="flat"]/text()', dataxml), ''), NULL), '') AS flat,  
+        COALESCE(NULLIF(array_to_string(xpath('//*[local-name()="guid"]/text()', dataxml), ''), NULL), '') AS guid  
+    FROM proactive_documents   
+    WHERE id = doc_id;  
+END;  
+$$ LANGUAGE plpgsql;
+
+третья функция 
+CREATE OR REPLACE FUNCTION update_insured_address(doc_id INT, new_flat TEXT, new_guid TEXT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = xmlmodify(
+        dataxml,
+        ARRAY[
+            XMLPatch('//ns3:insuredInfo/ns3:taxpayer/ns3:address/flat', new_flat),
+            XMLPatch('//ns3:insuredInfo/ns3:taxpayer/ns3:address/guid', new_guid)
+        ],
+        ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+четвертая функция
+CREATE OR REPLACE FUNCTION get_exclude_periods(doc_id INT)
+RETURNS TABLE (period_type INTEGER, begin_date DATE, end_date DATE) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:type/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::integer, 
+            NULL) AS period_type,
+        
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:period/ns3:begin/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date, 
+            NULL) AS begin_date,
+        
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:period/ns3:end/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date, 
+            NULL) AS end_date
+    FROM proactive_documents, generate_series(1, 
+        array_length(xpath('//ns3:excludePeriod', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), 1)) AS s(i)
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+пятая функция 
+CREATE OR REPLACE FUNCTION get_down_periods(doc_id INT)
+RETURNS TABLE (period_begin DATE, period_end DATE, idle_average INTEGER) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        (xpath('//ns3:downPeriod/ns3:period/ns3:begin/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date,
+        (xpath('//ns3:downPeriod/ns3:period/ns3:end/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date,
+        (xpath('//ns3:downPeriod/ns3:idleAverage/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::integer
+    FROM proactive_documents, generate_series(1, 
+        array_length(xpath('//ns3:downPeriod', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), 1)) AS s(i)
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+шестая функция
+CREATE OR REPLACE FUNCTION delete_down_period(doc_id INT, target_begin DATE, target_end DATE)
+RETURNS VOID AS $$ 
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:downPeriod>\s*<ns3:period>\s*' ||
+            '<ns3:begin>' || target_begin || '</ns3:begin>\s*' ||
+            '<ns3:end>' || target_end || '</ns3:end>\s*</ns3:period>\s*' ||
+            '<ns3:idleAverage>\d+</ns3:idleAverage>\s*</ns3:downPeriod>',
+            '',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+седьмая функция
+CREATE OR REPLACE FUNCTION delete_exclude_period(doc_id INT, target_begin DATE, target_end DATE)
+RETURNS VOID AS $$ 
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:excludePeriod>\s*<ns3:type>\d+</ns3:type>\s*<ns3:period>\s*' ||
+            '<ns3:begin>' || target_begin || '</ns3:begin>\s*' ||
+            '<ns3:end>' || target_end || '</ns3:end>\s*</ns3:period>\s*</ns3:excludePeriod>',
+            '',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+восьмая функция 
+CREATE OR REPLACE FUNCTION add_down_period(
+    doc_id INT,
+    new_begin DATE,
+    new_end DATE,
+    new_idle INTEGER
+) RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '</ns3:downPeriodList>',
+            '  <ns3:downPeriod>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+                <ns3:idleAverage>' || new_idle || '</ns3:idleAverage>
+            </ns3:downPeriod>
+            </ns3:downPeriodList>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+девятая функция
+CREATE OR REPLACE FUNCTION add_exclude_period(
+    doc_id INT,
+    new_type INT,
+    new_begin DATE,
+    new_end DATE
+) RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '</ns3:excludePeriodList>',
+            '  <ns3:excludePeriod>
+                <ns3:type>' || new_type || '</ns3:type>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+            </ns3:excludePeriod>
+            </ns3:excludePeriodList>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
