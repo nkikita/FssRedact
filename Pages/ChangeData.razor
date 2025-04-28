@@ -17,9 +17,13 @@
                 @bind-Value="newselectedValue"
                 Placeholder="Выберите вариант" />
 
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newbegin_date"/>
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newbegin_date" @onblur="ValidateBeginDate" />
         
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newend_date"/>
+        <RadzenLabel Text="@beginDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(beginDateError))" />
+        
+        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="newend_date" @onblur="ValidateEndDate" />
+
+        <RadzenLabel Text="@endDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(endDateError))" />
 
         <RadzenButton Click="UpdateData">Заменить</RadzenButton>
     </RadzenStack>
@@ -42,55 +46,86 @@
     
     [Parameter] public int userId { get; set; }
     [Parameter] public int ch { get; set; }
-    string? oldbegin_date;
-    string? oldend_date;
     string? newbegin_date;
     string? newend_date;
-
     
+    string? beginDateError;
+    string? endDateError;
 
-    private async Task UpdateData()
+
+    private void ValidateBeginDate(FocusEventArgs args)
     {
-        try
-        {
-            if (string.IsNullOrEmpty(newbegin_date) || string.IsNullOrEmpty(newend_date))
-            {
-                await DialogService.Alert("Введите даты корректно.");
-                return;
-            }
+        beginDateError = DateValidationHelper.ValidateSingleDate(newbegin_date);
+    }
 
-            if (ch == 1&& dataex?.Begin_date != null && dataex?.End_date != null && dataex.Period_type != null)
-            {
-                 UserService.UpdateExcludePeriod(
-                    userId,
-                    dataex.Period_type.Value,
-                    dataex.Begin_date.Value.Date,
-                    dataex.End_date.Value.Date,
-                    Convert.ToInt32(newselectedValue),
-                    DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
-                );
-            }
-            else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null && dataper?.Idle_average != null)
-            {
-                 UserService.UpdateDownPeriod(
-                    userId,
-                    dataper.Period_begin.Value.Date,
-                    dataper.Period_end.Value.Date,
-                    dataper.Idle_average.Value,
-                    DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    Convert.ToInt32(newselectedValue)
-                );
-            }
+    private void ValidateEndDate(FocusEventArgs args)
+    {
+        endDateError = DateValidationHelper.ValidateSingleDate(newend_date);
 
-            await DialogService.Alert("Данные успешно обновлены!");
-            DialogService.Close();
-            StateHasChanged();
-        }
-        catch (Exception ex)
+        if (string.IsNullOrEmpty(beginDateError) && string.IsNullOrEmpty(endDateError))
         {
-            await DialogService.Alert($"Ошибка: {ex.Message}");
+            var rangeError = DateValidationHelper.ValidateDateRange(newbegin_date, newend_date);
+            if (!string.IsNullOrEmpty(rangeError))
+                endDateError = rangeError;
         }
     }
+     private bool TryParseDate(string? date, out DateTime result)
+    {
+        return DateTime.TryParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+    }
+
+    private async Task UpdateData()
+{
+    try
+    {
+        ValidateBeginDate(null);
+        ValidateEndDate(null);
+
+        if (!string.IsNullOrEmpty(beginDateError) || !string.IsNullOrEmpty(endDateError))
+        {
+            await DialogService.Alert("Исправьте ошибки в датах перед отправкой.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(newbegin_date) || string.IsNullOrEmpty(newend_date))
+        {
+            await DialogService.Alert("Введите даты корректно.");
+            return;
+        }
+
+        if (ch == 1 && dataex?.Begin_date != null && dataex?.End_date != null && dataex.Period_type != null)
+        {
+            UserService.UpdateExcludePeriod(
+                userId,
+                dataex.Period_type.Value,
+                dataex.Begin_date.Value.Date,
+                dataex.End_date.Value.Date,
+                Convert.ToInt32(newselectedValue),
+                DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
+            );
+        }
+        else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null && dataper?.Idle_average != null)
+        {
+            UserService.UpdateDownPeriod(
+                userId,
+                dataper.Period_begin.Value.Date,
+                dataper.Period_end.Value.Date,
+                dataper.Idle_average.Value,
+                DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                Convert.ToInt32(newselectedValue)
+            );
+        }
+
+        await DialogService.Alert("Данные успешно обновлены!");
+        DialogService.Close();
+        StateHasChanged();
+    }
+    catch (Exception ex)
+    {
+        await DialogService.Alert($"Ошибка: {ex.Message}");
+    }
+}
+
 }
