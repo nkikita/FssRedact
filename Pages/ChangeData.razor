@@ -9,18 +9,6 @@
 
 <RadzenCard Style="max-width: 600px; padding: 20px;">
     <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-        <RadzenLabel>Старая дата</RadzenLabel>
-        <RadzenDropDown TValue="string"
-                Data="@options"
-                TextProperty="Text"
-                ValueProperty="Value"
-                @bind-Value="oldselectedValue"
-                Placeholder="Выберите вариант" />
-
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="oldbegin_date"/>
-        
-        <RadzenMask Mask="**-**-****" CharacterPattern="[0-9]" Placeholder="dd-MM-yyyy" @bind-Value="oldend_date"/>
-
          <RadzenLabel>Новая дата</RadzenLabel>
         <RadzenDropDown TValue="string"
                 Data="@options"
@@ -40,6 +28,10 @@
 @code {
     string? oldselectedValue;
     string? newselectedValue;
+    
+    [Parameter] public ExcludePeriod? dataex{get; set;}
+    
+    [Parameter] public PeriodDate? dataper{get; set;}
     private List<Option> options = new()
     {
         new Option { Value = "1", Text = "Работа" },
@@ -63,29 +55,29 @@
         {
             if (string.IsNullOrEmpty(newbegin_date) || string.IsNullOrEmpty(newend_date))
             {
-                 DialogService.Alert("Введите даты корректно.");
+                await DialogService.Alert("Введите даты корректно.");
                 return;
             }
 
-            if (ch == 1)
+            if (ch == 1&& dataex?.Begin_date != null && dataex?.End_date != null && dataex.Period_type != null)
             {
                  UserService.UpdateExcludePeriod(
                     userId,
-                    Convert.ToInt32(oldselectedValue),
-                    DateTime.ParseExact(oldbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(oldend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                    dataex.Period_type.Value,
+                    dataex.Begin_date.Value.Date,
+                    dataex.End_date.Value.Date,
                     Convert.ToInt32(newselectedValue),
                     DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
                 );
             }
-            else if (ch == 2)
+            else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null && dataper?.Idle_average != null)
             {
                  UserService.UpdateDownPeriod(
                     userId,
-                    DateTime.ParseExact(oldbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    DateTime.ParseExact(oldend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                    Convert.ToInt32(oldselectedValue),
+                    dataper.Period_begin.Value.Date,
+                    dataper.Period_end.Value.Date,
+                    dataper.Idle_average.Value,
                     DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
                     Convert.ToInt32(newselectedValue)

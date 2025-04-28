@@ -1,4 +1,4 @@
-@page "/DeleteData/{userId, ch}"
+@page "/DeleteData/{userId, ch, dataex, dataper}"
 
 @using FssRedact.Helpers;
 @using FssRedact.Services;
@@ -8,92 +8,57 @@
 @inject DialogService DialogService
 
 
-<RadzenCard Style="max-width: 600px; padding: 20px;">
-    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-        <RadzenLabel>Дата начала периода</RadzenLabel>
-        <RadzenMask Mask="**-**-****"
-                    CharacterPattern="[0-9]"
-                    Placeholder="Введите дату в формате dd-MM-yyyy"
-                    Name="beginDate"
-                    @bind-Value="begin_date"
-                    Style="width: 100%;"
-                    @onblur="ValidateBeginDate" />
-        <RadzenLabel Text="@beginDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(beginDateError))" />
-
-        <RadzenLabel>Дата конца периода</RadzenLabel>
-        <RadzenMask Mask="**-**-****"
-                    CharacterPattern="[0-9]"
-                    Placeholder="Введите дату в формате dd-MM-yyyy"
-                    Name="endDate"
-                    @bind-Value="end_date"
-                    Style="width: 100%;"
-                    @onblur="ValidateEndDate" />
-        <RadzenLabel Text="@endDateError" Style="color: red;" Visible="@(!string.IsNullOrEmpty(endDateError))" />
-
-        
-        <RadzenButton Click="Delete">Удалить</RadzenButton>
-    </RadzenStack>
-</RadzenCard>
-
+    <RadzenButton Click="Delete" Class="rz-mt-4 rz-align-self-center" Text="Удалить?" ButtonStyle="ButtonStyle.Primary" />
+       
 @code {
     string? begin_date;
     string? end_date;
     
     [Parameter] public int userId { get; set; }
     [Parameter] public int ch {get; set;}
+    [Parameter] public ExcludePeriod? dataex{get; set;}
+    
+    [Parameter] public PeriodDate? dataper{get; set;}
     string? beginDateError;
     string? endDateError;
-
-    private void ValidateBeginDate(FocusEventArgs args)
+  private void Delete()
+{
+    try
     {
-        beginDateError = DateValidationHelper.ValidateSingleDate(begin_date);
-    }
+        Console.WriteLine("Удаление записи...");
 
-    private void ValidateEndDate(FocusEventArgs args)
-    {
-        endDateError = DateValidationHelper.ValidateSingleDate(end_date);
-
-        if (string.IsNullOrEmpty(beginDateError) && string.IsNullOrEmpty(endDateError))
+        if (ch == 1 && dataex?.Begin_date != null && dataex?.End_date != null)
         {
-            var rangeError = DateValidationHelper.ValidateDateRange(begin_date, end_date);
-            if (!string.IsNullOrEmpty(rangeError))
-                endDateError = rangeError;
-        }
-    }
+            Console.WriteLine($"Дата (Exclude): {dataex.Begin_date:dd.MM.yyyy} - {dataex.End_date:dd.MM.yyyy}");
 
-    private void Delete(){
-        
-        try{
-            if(begin_date == null && end_date == null){
-            
-                DialogService.Close(); 
-            }
-            else{
-            if(ch == 1 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
-                UserService.DeleteExcludePreiod(
-                    userId, 
-                    DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
-                );
-            }
-            else if (ch ==2 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
-                UserService.DeleteDownPreiod(
-                    userId, 
-                    DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
-                );
-            }
-            
-            DialogService.Close(); 
-            StateHasChanged();
-            }
-            
-        }catch(Exception ex){
-            DialogService.OpenAsync<ShowError>("Ошибка", new Dictionary<string, object>
-            {
-                { "ex", ex }
-            }
-        );
-        StateHasChanged();}
+            UserService.DeleteExcludePreiod(
+                userId,
+                dataex.Begin_date.Value.Date,
+                dataex.End_date.Value.Date
+            );
+        }
+        else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null)
+        {
+            Console.WriteLine($"Дата (Period): {dataper.Period_begin:dd.MM.yyyy} - {dataper.Period_end:dd.MM.yyyy}");
+
+            UserService.DeleteDownPreiod(
+                userId,
+                dataper.Period_begin.Value.Date,
+                dataper.Period_end.Value.Date
+            );
+        }
+
+        DialogService.Close();
+        StateHasChanged();
     }
+    catch (Exception ex)
+    {
+        DialogService.OpenAsync<ShowError>("Ошибка", new Dictionary<string, object>
+        {
+            { "ex", ex }
+        });
+        StateHasChanged();
+    }
+}
+
 } 

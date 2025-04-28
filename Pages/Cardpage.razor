@@ -6,10 +6,13 @@
 @inject DialogService DialogService
 @inject AddressService AddressService
 
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+    <RadzenButton Click="ExportToExcel" Text="Сохранить данные" ButtonStyle="ButtonStyle.Primary" /></div>
+    
 <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+    
     <RadzenStack Orientation="Orientation.Horizontal"  Style="justify-content: space-around;">
 
-   
     <RadzenStack Gap="0.5rem">
         <RadzenText class="rz-mb-0" TextStyle="TextStyle.Overline">Фамилия</RadzenText>
         <RadzenText TextStyle="TextStyle.Body1"><b>@info?.First_Name</b></RadzenText>
@@ -24,6 +27,7 @@
         <RadzenText TextStyle="TextStyle.Body1"><b>@info?.Snils</b></RadzenText>
     </RadzenStack>
 
+
     <RadzenStack Gap="0.5rem">
         <RadzenText TextStyle="TextStyle.Overline">Квартира</RadzenText>
         @if (IsEnabled)
@@ -34,7 +38,7 @@
         {
             <RadzenText class="labelsGF" TextStyle="TextStyle.Body1"><b>@userAdress?.Flat</b></RadzenText>
         }
-        <RadzenText TextStyle="TextStyle.Overline">GUID</RadzenText>
+        <RadzenText TextStyle="TextStyle.Overline">Адрес</RadzenText>
         @if (IsEnabled)
         {
         <RadzenStack Orientation="Orientation.Horizontal">
@@ -61,23 +65,28 @@
             <RadzenButton Click="Change" Class="rz-mt-4 rz-align-self-center" Text="@buttonText" ButtonStyle="ButtonStyle.Primary" />
         </RadzenStack>
     </RadzenStack>
-    <RadzenButton Click="ExportToExcel">Сохранить данные</RadzenButton>
 
 </RadzenStack>
+
 
 
     <RadzenStack class="gridstack">
         <RadzenLabel class="customLabels">Дата периода</RadzenLabel>
         <RadzenRow>
             <RadzenButton Icon="Add" Click="Add_down_data"/>
-            <RadzenButton Icon="Delete" Click="Delete_down_data"/>
-            <RadzenButton Icon="Edit" Click="Update_down_data"/>
         </RadzenRow>
         <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="PeriodDate" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@periodDate" class=" rz-mb-4" style="z-index: 0;">
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(PeriodDate.Idle_average)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="PeriodDate" Property="@nameof(PeriodDate.Idle_average)" Title="Тип периода"><Template Context="data"><div style="padding-left: 30px;">@PeriodTypeToText(data.Idle_average)</div></Template></RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.Period_begin?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.Period_end?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="PeriodDate" Title="Действия" Width="180px">
+                <Template Context="data">
+                    <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 5px;" Click="@(() => Update_down_data(data))" />
+                    <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@(() => Delete_down_data(data))" />
+                </Template>
+            </RadzenDataGridColumn>
+
             </Columns>
         </RadzenDataGrid>
     </RadzenStack>
@@ -86,15 +95,19 @@
         <RadzenLabel class="customLabels">Исключить период</RadzenLabel>
         <RadzenRow>
             <RadzenButton Icon="Add" Click="Add_exclude_data"/>
-            <RadzenButton Icon="Delete" Click="Delete_exclude_data"/>
-            <RadzenButton Icon="Edit" Click="Update_exclude_data"/>
         </RadzenRow>
         <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="ExcludePeriod" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@excludePeriod" class=" rz-mb-4" style="z-index: 0;">
             <Columns>
-                <RadzenDataGridColumn Property="@nameof(ExcludePeriod.Period_type)" Filterable="false"  Title="Тип" Width="80px" TextAlign="TextAlign.Center" />
+                <RadzenDataGridColumn TItem="ExcludePeriod" Property="@nameof(ExcludePeriod.Period_type)" Title="Тип периода"><Template Context="data"><div style="padding-left: 30px;">@PeriodTypeToText(data.Period_type)</div></Template></RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.Begin_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Дата изменения" Width="160px"><Template Context="data">@data.End_date?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
-                </Columns>
+                <RadzenDataGridColumn TItem="ExcludePeriod" Title="Действия" Width="180px">
+                <Template Context="data">
+                    <RadzenButton Icon="edit" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 5px;" Click="@(() => Update_exclude_data(data))" />
+                    <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@(() => Delete_exclude_data(data))" />
+                </Template>
+            </RadzenDataGridColumn>
+            </Columns>
         </RadzenDataGrid>
     </RadzenStack>
     
@@ -116,6 +129,19 @@
     string token = "939358a987eb492cb4adc68ee9944fb014f184db";    
     int count;
     private IEnumerable<Address>? getAddress;
+    
+   private List<Option> options = new()
+{
+    new Option { Value = "1", Text = "Работа" },
+    new Option { Value = "2", Text = "Больничный" },
+    new Option { Value = "3", Text = "Учёба" }
+};
+
+
+public string PeriodTypeToText(int? val)
+{
+    return options.FirstOrDefault(o => o.Value == val.ToString())?.Text ?? "Неизвестно";
+}
 
   async Task LoadData(LoadDataArgs args)
 {
@@ -183,21 +209,24 @@
         StateHasChanged();
     }
 
-    protected void Delete_exclude_data(){
+
+    protected void Delete_exclude_data(ExcludePeriod data){
         ch = 1;
         DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
         {
             { "UserId", userId },
-            { "ch", ch}
+            { "ch", ch},
+            {"dataex", data}
         }
         );
     }
-    protected void Delete_down_data(){
+    protected void Delete_down_data(PeriodDate data){
         ch = 2;
         DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
         {
             { "UserId", userId },
-            { "ch", ch}
+            { "ch", ch},
+            {"dataper", data}
         }
         );
     }
@@ -219,21 +248,23 @@
         }
         );
     }
-    protected void Update_down_data(){
+    protected void Update_down_data(PeriodDate data){
         ch = 2;
         DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
         {
             { "UserId", userId },
-            { "ch", ch}
+            { "ch", ch},
+            {"dataper", data}
         }
         );
     }
-    protected void Update_exclude_data(){
+    protected void Update_exclude_data(ExcludePeriod data){
         ch = 1;
         DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
         {
             { "UserId", userId },
-            { "ch", ch}
+            { "ch", ch},
+            {"dataex", data}
         }
         );
     }
