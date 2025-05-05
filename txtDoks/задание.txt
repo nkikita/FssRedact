@@ -1,0 +1,342 @@
+<?xml version="1.0" standalone="yes"?>
+<ns2:confirmationRequest xmlns="http://www.fss.ru/integration/types/common/v01" xmlns:ns6="urn:ru:fss:integration:types:proactive:benefit4:v02" xmlns:ns5="urn:ru:fss:integration:types:proactive:benefit2:v01" xmlns:ns8="urn:ru:fss:integration:types:proactive:benefit6:v01" xmlns:ns7="urn:ru:fss:integration:types:proactive:benefit5:v01" xmlns:ns2="urn:ru:fss:integration:types:proactive:v01" xmlns:ns4="http://www.fss.ru/integration/types/person/v02" xmlns:ns3="urn:ru:fss:integration:types:proactive:benefit1:v01">
+  <ns2:socialAssistNum>293324451</ns2:socialAssistNum>
+  <ns3:benefit1Approve>
+    <ns3:elnInfo ns2:editable="false" ns2:required="true">
+      <ns3:code ns2:editable="false" ns2:required="true">910238460742</ns3:code>
+    </ns3:elnInfo>
+    <ns3:insurerInfo>
+      <ns3:regNum ns2:editable="false" ns2:required="true">6603603808</ns3:regNum>
+      <ns3:partTime ns2:editable="true" ns2:required="true">NONE</ns3:partTime>
+      <ns3:parentNo ns2:editable="true" ns2:required="true">66031</ns3:parentNo>
+    </ns3:insurerInfo>
+    <ns3:insuredInfo>
+      <ns3:category ns2:editable="true" ns2:required="true">INSURED</ns3:category>
+      <ns3:snils ns2:editable="false" ns2:required="true">18459553821</ns3:snils>
+      <ns3:inn ns2:editable="true" ns2:required="false">662348460132</ns3:inn>
+      <ns3:fullName ns2:editable="true" ns2:required="true">
+        <ns4:firstName>ВАСИЛЬЕВА</ns4:firstName>
+        <ns4:lastName>АЛЕКСАНДРА</ns4:lastName>
+        <ns4:middleName>АЛЕКСЕЕВНА</ns4:middleName>
+      </ns3:fullName>
+      <ns3:birthDate ns2:editable="true" ns2:required="true">1992-10-12</ns3:birthDate>
+      <ns3:gender ns2:editable="true" ns2:required="true">FEMALE</ns3:gender>
+      <ns3:taxpayer ns2:required="true" ns2:editable="true">
+        <ns3:taxpayerStatus>1</ns3:taxpayerStatus>
+        <ns3:countryCode>643</ns3:countryCode>
+        <ns3:address>
+          <flat>47</flat>
+          <guid>2ba96aac-526d-4192-b642-94650aac00cf</guid>
+        </ns3:address>
+        <ns3:postalCode>624760</ns3:postalCode>
+      </ns3:taxpayer>
+      <ns3:id ns2:required="true" ns2:editable="true">
+        <ns4:type>21</ns4:type>
+        <ns4:series>6519</ns4:series>
+        <ns4:num>938109</ns4:num>
+        <ns4:issueDate>2019-10-08</ns4:issueDate>
+        <ns4:dept>ГУ МВД РОССИИ ПО СВЕРДЛОВСКОЙ ОБЛАСТИ</ns4:dept>
+      </ns3:id>
+    </ns3:insuredInfo>
+    <ns3:receivePayment ns2:editable="true" ns2:required="true">
+      <cardMir>2202201888235047</cardMir>
+    </ns3:receivePayment>
+    <ns3:calculationData>
+      <ns3:baseCalcDays>730</ns3:baseCalcDays>
+      <ns3:years>
+        <ns3:changeYear>true</ns3:changeYear>
+        <ns3:year>
+          <ns3:calc ns2:editable="true" ns2:required="true">2019</ns3:calc>
+          <ns3:baseSum ns2:editable="true" ns2:required="true">486564.51</ns3:baseSum>
+          <ns3:sumType ns2:editable="false">amountForAllInsurers</ns3:sumType>
+        </ns3:year>
+        <ns3:year>
+          <ns3:calc ns2:editable="true" ns2:required="true">2023</ns3:calc>
+          <ns3:baseSum ns2:editable="true" ns2:required="true">409780.42</ns3:baseSum>
+          <ns3:sumType ns2:editable="false">amountForAllInsurers</ns3:sumType>
+        </ns3:year>
+      </ns3:years>
+      <ns3:kfReg ns2:editable="true" ns2:required="true">115</ns3:kfReg>
+      <ns3:kfShortDays ns2:editable="true" ns2:required="true">1</ns3:kfShortDays>
+      <ns3:experience ns2:editable="true" ns2:required="true">
+        <ns3:insurYY ns2:editable="true" ns2:required="true">9</ns3:insurYY>
+        <ns3:insurMM ns2:editable="true" ns2:required="true">6</ns3:insurMM>
+        <ns3:notInsurYY xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+	<ns3:notInsurMM xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+      </ns3:experience>
+      <ns3:calcConditionList xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+      <ns3:payPeriodFSS>
+        <ns3:begin ns2:editable="true" ns2:required="true">2024-09-02</ns3:begin>
+        <ns3:end ns2:editable="false" ns2:required="true">2024-09-06</ns3:end>
+      </ns3:payPeriodFSS>
+      <ns3:excludePeriodList xmlns:ns3="urn:ru:fss:integration:types:proactive:benefit1:v01">
+              
+	</ns3:excludePeriodList>
+
+      <ns3:downPeriodList xmlns:ns3="urn:ru:fss:integration:types:proactive:benefit1:v01">
+        
+	</ns3:downPeriodList>
+
+    </ns3:calculationData>
+    <ns3:assignmentParams>
+      <ns3:insuredWorksSeveralInsurers ns2:editable="false">false</ns3:insuredWorksSeveralInsurers>
+      <ns3:paymentMethod ns2:editable="false">oneInsurerAssignment</ns3:paymentMethod>
+      <ns3:contractsType>
+        <ns3:contractType ns2:editable="true">workerContract</ns3:contractType>
+      </ns3:contractsType>
+    </ns3:assignmentParams>
+  </ns3:benefit1Approve>
+</ns2:confirmationRequest>
+
+
+создание таблицы
+CREATE TABLE proactive_documents (
+    id SERIAL PRIMARY KEY,
+    dataxml XML NOT NULL,
+    datecreated TIMESTAMP DEFAULT now(),
+    datemodified TIMESTAMP DEFAULT now(),
+    namecreated VARCHAR(255) NOT NULL,
+    namemodified VARCHAR(255) NOT NULL
+);
+
+
+первая функция 
+CREATE OR REPLACE FUNCTION get_insured_info(doc_id INT)
+RETURNS TABLE (last_name TEXT, first_name TEXT, middle_name TEXT, snils TEXT) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:lastName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS last_name,
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:firstName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS first_name,
+        COALESCE(array_to_string(xpath('//ns3:fullName/ns4:middleName/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01'], 
+                  ARRAY['ns4', 'http://www.fss.ru/integration/types/person/v02']]), ''), '') AS middle_name,
+        COALESCE(array_to_string(xpath('//ns3:snils/text()', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), ''), '') AS snils
+    FROM proactive_documents 
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+вторая функция 
+CREATE OR REPLACE FUNCTION get_insured_address(doc_id INT)
+RETURNS TABLE (flat TEXT, guid TEXT) AS $$  
+BEGIN  
+    RETURN QUERY  
+    SELECT  
+        COALESCE(NULLIF(array_to_string(xpath('//*[local-name()="flat"]/text()', dataxml), ''), NULL), '') AS flat,  
+        COALESCE(NULLIF(array_to_string(xpath('//*[local-name()="guid"]/text()', dataxml), ''), NULL), '') AS guid  
+    FROM proactive_documents   
+    WHERE id = doc_id;  
+END;  
+$$ LANGUAGE plpgsql;
+
+третья функция 
+CREATE OR REPLACE FUNCTION update_insured_address(doc_id INT, new_flat TEXT, new_guid TEXT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = xmlmodify(
+        dataxml,
+        ARRAY[
+            XMLPatch('//ns3:insuredInfo/ns3:taxpayer/ns3:address/flat', new_flat),
+            XMLPatch('//ns3:insuredInfo/ns3:taxpayer/ns3:address/guid', new_guid)
+        ],
+        ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+четвертая функция
+CREATE OR REPLACE FUNCTION get_exclude_periods(doc_id INT)
+RETURNS TABLE (period_type INTEGER, begin_date DATE, end_date DATE) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:type/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::integer, 
+            NULL) AS period_type,
+        
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:period/ns3:begin/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date, 
+            NULL) AS begin_date,
+        
+        COALESCE(
+            (xpath('//ns3:excludePeriod/ns3:period/ns3:end/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date, 
+            NULL) AS end_date
+    FROM proactive_documents, generate_series(1, 
+        array_length(xpath('//ns3:excludePeriod', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), 1)) AS s(i)
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+пятая функция 
+CREATE OR REPLACE FUNCTION get_down_periods(doc_id INT)
+RETURNS TABLE (period_begin DATE, period_end DATE, idle_average INTEGER) AS $$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        (xpath('//ns3:downPeriod/ns3:period/ns3:begin/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date,
+        (xpath('//ns3:downPeriod/ns3:period/ns3:end/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::date,
+        (xpath('//ns3:downPeriod/ns3:idleAverage/text()', dataxml, 
+                ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]))[i]::text::integer
+    FROM proactive_documents, generate_series(1, 
+        array_length(xpath('//ns3:downPeriod', dataxml, 
+            ARRAY[ARRAY['ns3', 'urn:ru:fss:integration:types:proactive:benefit1:v01']]), 1)) AS s(i)
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+шестая функция
+CREATE OR REPLACE FUNCTION delete_down_period(doc_id INT, target_begin DATE, target_end DATE)
+RETURNS VOID AS $$ 
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:downPeriod>\s*<ns3:period>\s*' ||
+            '<ns3:begin>' || target_begin || '</ns3:begin>\s*' ||
+            '<ns3:end>' || target_end || '</ns3:end>\s*</ns3:period>\s*' ||
+            '<ns3:idleAverage>\d+</ns3:idleAverage>\s*</ns3:downPeriod>',
+            '',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+седьмая функция
+CREATE OR REPLACE FUNCTION delete_exclude_period(doc_id INT, target_begin DATE, target_end DATE)
+RETURNS VOID AS $$ 
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:excludePeriod>\s*<ns3:type>\d+</ns3:type>\s*<ns3:period>\s*' ||
+            '<ns3:begin>' || target_begin || '</ns3:begin>\s*' ||
+            '<ns3:end>' || target_end || '</ns3:end>\s*</ns3:period>\s*</ns3:excludePeriod>',
+            '',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+восьмая функция 
+CREATE OR REPLACE FUNCTION add_down_period(
+    doc_id INT,
+    new_begin DATE,
+    new_end DATE,
+    new_idle INTEGER
+) RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '</ns3:downPeriodList>',
+            '  <ns3:downPeriod>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+                <ns3:idleAverage>' || new_idle || '</ns3:idleAverage>
+            </ns3:downPeriod>
+            </ns3:downPeriodList>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+девятая функция
+CREATE OR REPLACE FUNCTION add_exclude_period(
+    doc_id INT,
+    new_type INT,
+    new_begin DATE,
+    new_end DATE
+) RETURNS VOID AS $$
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '</ns3:excludePeriodList>',
+            '  <ns3:excludePeriod>
+                <ns3:type>' || new_type || '</ns3:type>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+            </ns3:excludePeriod>
+            </ns3:excludePeriodList>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+$$ LANGUAGE plpgsql;
+
+десятая функция 
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:excludePeriod>.*?<ns3:type>' || old_type || '</ns3:type>.*?<ns3:begin>' || old_begin || '</ns3:begin>.*?<ns3:end>' || old_end || '</ns3:end>.*?</ns3:excludePeriod>',
+            '<ns3:excludePeriod>
+                <ns3:type>' || new_type || '</ns3:type>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+            </ns3:excludePeriod>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+
+одиннадцатая функция 
+
+BEGIN
+    UPDATE proactive_documents
+    SET dataxml = XMLPARSE(DOCUMENT 
+        REGEXP_REPLACE(
+            XMLSERIALIZE(CONTENT dataxml AS TEXT),
+            '<ns3:downPeriod>\s*<ns3:period>\s*<ns3:begin>' || old_begin || '</ns3:begin>\s*<ns3:end>' || old_end || '</ns3:end>\s*</ns3:period>\s*<ns3:idleAverage>' || old_idle || '</ns3:idleAverage>',
+            '<ns3:downPeriod>
+                <ns3:period>
+                    <ns3:begin>' || new_begin || '</ns3:begin>
+                    <ns3:end>' || new_end || '</ns3:end>
+                </ns3:period>
+                <ns3:idleAverage>' || new_idle || '</ns3:idleAverage>',
+            'g'
+        )
+    )
+    WHERE id = doc_id;
+END;
+
+
+
+
+2ba96aac-526d-4192-b642-94650aac00cf
