@@ -2,6 +2,7 @@
 
 @using FssRedact.Helpers;
 @using FssRedact.Services;
+@using XMLFunctions;
 @using FssRedact.Models;
 @using System.Globalization;
 @inject UserService UserService
@@ -10,55 +11,50 @@
 
     <RadzenButton Click="Delete" Class="rz-mt-4 rz-align-self-center" Text="Удалить?" ButtonStyle="ButtonStyle.Primary" />
        
-@code {
+
+ @code {
     string? begin_date;
     string? end_date;
     
     [Parameter] public int userId { get; set; }
-    [Parameter] public int ch {get; set;}
-    [Parameter] public ExcludePeriod? dataex{get; set;}
-    
-    [Parameter] public PeriodDate? dataper{get; set;}
+    [Parameter] public int ch { get; set; }
+    [Parameter] public ExcludePeriod? dataex { get; set; }
+    [Parameter] public PeriodDate? dataper { get; set; }
+
     string? beginDateError;
     string? endDateError;
-  private void Delete()
-{
-    try
+
+    private async Task Delete()
     {
-        Console.WriteLine("Удаление записи...");
-
-        if (ch == 1 && dataex?.Begin_date != null && dataex?.End_date != null)
+        try
         {
-            Console.WriteLine($"Дата (Exclude): {dataex.Begin_date:dd.MM.yyyy} - {dataex.End_date:dd.MM.yyyy}");
+            Console.WriteLine("Удаление записи...");
 
-            UserService.DeleteExcludePreiod(
-                userId,
-                dataex.Begin_date.Value.Date,
-                dataex.End_date.Value.Date
-            );
+            if (ch == 1 && dataex?.Begin_date != null && dataex?.End_date != null)
+            {
+                Console.WriteLine($"Дата (Exclude): {dataex.Begin_date:dd.MM.yyyy} - {dataex.End_date:dd.MM.yyyy}");
+
+                await DeleteFuncExclude.DeleteExcludePeriod(userId,  dataex.Begin_date.Value.ToString("dd.MM.yyyy"), dataex.End_date.Value.ToString("dd.MM.yyyy"));
+            }
+            else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null)
+            {
+                Console.WriteLine($"Дата (Period): {dataper.Period_begin.Value:dd.MM.yyyy} - {dataper.Period_end.Value:dd.MM.yyyy}");
+
+                // Асинхронный вызов
+                await DeleteFunctDown.DeleteDownPeriod(userId, dataper.Period_begin.Value.ToString("dd.MM.yyyy"), dataper.Period_end.Value.ToString("dd.MM.yyyy"));
+            }
+
+            DialogService.Close();
+            StateHasChanged();
         }
-        else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null)
+        catch (Exception ex)
         {
-            Console.WriteLine($"Дата (Period): {dataper.Period_begin:dd.MM.yyyy} - {dataper.Period_end:dd.MM.yyyy}");
-
-            UserService.DeleteDownPreiod(
-                userId,
-                dataper.Period_begin.Value.Date,
-                dataper.Period_end.Value.Date
-            );
+            // Открываем диалог с ошибкой
+            await DialogService.OpenAsync<ShowError>("Ошибка", new Dictionary<string, object>
+            {
+                { "ex", ex }
+            });
+            StateHasChanged();
         }
-
-        DialogService.Close();
-        StateHasChanged();
-    }
-    catch (Exception ex)
-    {
-        DialogService.OpenAsync<ShowError>("Ошибка", new Dictionary<string, object>
-        {
-            { "ex", ex }
-        });
-        StateHasChanged();
     }
 }
-
-} 

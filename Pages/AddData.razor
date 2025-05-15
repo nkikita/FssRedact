@@ -3,6 +3,7 @@
 @using FssRedact.Services;
 @using FssRedact.Helpers;
 @using FssRedact.Models;
+@using XMLFunctions;
 @using System.Globalization;
 @inject UserService UserService
 @inject DialogService DialogService
@@ -50,7 +51,6 @@
     string? selectedValue;
     [Parameter] public int userId { get; set; }
     [Parameter] public int ch {get; set;}
-
     string? begin_date;
     string? end_date;
     string? beginDateError;
@@ -80,7 +80,7 @@
     }
 
 
-    private void AddDatas(){
+    private async Task AddDatas(){
 
         try{
             if(begin_date == null && end_date == null){
@@ -88,20 +88,16 @@
             }
             else{
             if(ch == 1 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
-                UserService.AddExcludePreiod(
+                await AddFuncExclusdePeriod.AddExcludePeriodAsync( 
                     userId, 
+                    Convert.ToInt32(selectedValue),
                     DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date,
-                    Convert.ToInt32(selectedValue)
-                );
+                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date
+                    );
+           
             }
             else if (ch ==2 && !string.IsNullOrWhiteSpace(begin_date) && !string.IsNullOrWhiteSpace(end_date)){
-                UserService.AddDownPreiod(
-                    userId, 
-                    DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, 
-                    DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date,
-                    Convert.ToInt32(selectedValue)
-                );
+                await AddFubcDownPeriod.AddDownPeriodAsync(userId,DateTime.ParseExact(begin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date, DateTime.ParseExact(end_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).Date,Convert.ToInt32(selectedValue));
             }
             
             DialogService.Close(); 

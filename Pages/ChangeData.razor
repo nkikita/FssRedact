@@ -1,6 +1,7 @@
 @page "/ChangeData/{userId:int}/{ch:int}"
 
 @using FssRedact.Helpers;
+@using XMLFunctions;
 @using FssRedact.Services;
 @using FssRedact.Models;
 @using System.Globalization;
@@ -95,26 +96,29 @@
 
         if (ch == 1 && dataex?.Begin_date != null && dataex?.End_date != null && dataex.Period_type != null)
         {
-            UserService.UpdateExcludePeriod(
-                userId,
-                dataex.Period_type.Value,
-                dataex.Begin_date.Value.Date,
-                dataex.End_date.Value.Date,
-                Convert.ToInt32(newselectedValue),
-                DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
-            );
+           await EditFuncExclude.UpdateExcludePeriodAsync(
+            userId, 
+            dataex.Period_type.Value,                   
+            dataex.Begin_date.Value.Date,                
+            dataex.End_date.Value.Date,                  
+            int.Parse(newselectedValue),                 
+            DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+            DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture)
+        );
+
+
+
         }
         else if (ch == 2 && dataper?.Period_begin != null && dataper?.Period_end != null && dataper?.Idle_average != null)
         {
-            UserService.UpdateDownPeriod(
-                userId,
-                dataper.Period_begin.Value.Date,
-                dataper.Period_end.Value.Date,
-                dataper.Idle_average.Value,
-                DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
-                Convert.ToInt32(newselectedValue)
+           await EditFuncDown.UpdateDownPeriod(
+                userId, 
+                dataper.Period_begin.Value.Date.ToString("dd.MM.yyyy"),
+                dataper.Period_end.Value.Date.ToString("dd.MM.yyyy"),
+                dataper.Idle_average.Value.ToString(),
+                DateTime.ParseExact(newbegin_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).ToString("yyyy-MM-dd"),
+                DateTime.ParseExact(newend_date, "dd-MM-yyyy", CultureInfo.InvariantCulture).ToString("yyyy-MM-dd"),
+                newselectedValue.ToString()
             );
         }
 

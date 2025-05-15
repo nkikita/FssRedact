@@ -1,8 +1,10 @@
 @page "/{userId:int}"
 @inject IJSRuntime JS
 @using FssRedact.Services;
+@using XMLFunctions;
 @using FssRedact.Models;
 @inject UserService UserService
+@inject NavigationManager Navigation
 @inject DialogService DialogService
 @inject AddressService AddressService
 
@@ -69,13 +71,12 @@
 </RadzenStack>
 
 
-
     <RadzenStack class="gridstack">
         <RadzenLabel class="customLabels">Дата периода</RadzenLabel>
         <RadzenRow>
             <RadzenButton Icon="Add" Click="Add_down_data"/>
         </RadzenRow>
-        <RadzenDataGrid ColumnWidth="200px" AllowFiltering="true" TItem="PeriodDate" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@periodDate" class=" rz-mb-4" style="z-index: 0;">
+        <RadzenDataGrid @ref="grid" ColumnWidth="200px" AllowFiltering="true" TItem="PeriodDate" AllowPaging="true" PageSize="5" AllowSorting="true" Data="@periodDate" class=" rz-mb-4" style="z-index: 0;">
             <Columns>
                 <RadzenDataGridColumn TItem="PeriodDate" Property="@nameof(PeriodDate.Idle_average)" Title="Тип периода"><Template Context="data"><div style="padding-left: 30px;">@PeriodTypeToText(data.Idle_average)</div></Template></RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Дата создания" Width="160px"><Template Context="data">@data.Period_begin?.ToString("dd.MM.yyyy")</Template></RadzenDataGridColumn>
@@ -122,6 +123,7 @@
     private bool IsEnabled = false;
     [Parameter] public int userId { get; set; }
     private InsuredPerson? info;
+    public RadzenDataGrid<PeriodDate> grid;
     private IEnumerable<Address>? address;
     private UserAdress? userAdress; 
     private IEnumerable<PeriodDate>? periodDate;    
@@ -137,7 +139,7 @@
     new Option { Value = "3", Text = "Учёба" }
 };
 
-
+   
 public string PeriodTypeToText(int? val)
 {
     return options.FirstOrDefault(o => o.Value == val.ToString())?.Text ?? "Неизвестно";
@@ -175,27 +177,24 @@ public string PeriodTypeToText(int? val)
 
     protected override async Task OnInitializedAsync()     
     {
-        if (UserService != null)
-        {
-            excludePeriod = await UserService?.GetExclPeriodAsync(userId);
-            periodDate = await UserService.GetDownPeriodAsync(userId);
-            userAdress = await UserService.GetAdressInfoAsync(userId);
-            editableFlat = userAdress?.Flat;
-            editableGuid = userAdress?.Guid;
-            value = editableGuid;
-            address = await AddressService.GetAddressList(editableGuid, token);
-            searchText = address?.FirstOrDefault()?.Value ?? string.Empty;
-            info = await UserService.GetUserInfoAsync(userId);
-        }
+        excludePeriod = await GetExcludePeriod.GetExcludePeriodsAsync(userId);
+        periodDate = await GetDownPeriod.GetDownPeriodsAsync(userId);
+        userAdress = await GetUserAddress.GetFlatGuidAsync(userId);
+        editableFlat = userAdress?.Flat;
+        editableGuid = userAdress?.Guid;
+        value = editableGuid;
+        address = await AddressService.GetAddressList(editableGuid, token);
+        searchText = address?.FirstOrDefault()?.Value ?? string.Empty;
+        info = await GetUserInfo.GetPersonInfoAsync(userId);
     }
-    protected void Change()
+    protected async Task Change()
     {
         if (buttonText == "Сохранить" && !string.IsNullOrWhiteSpace(userAdress.Flat) )
         {
             userAdress.Flat = editableFlat;
             userAdress.Guid = editableGuid;
             searchText = address.FirstOrDefault()?.Value;
-            UserService.UpdateAdressInfoAsync(userId, editableFlat, value);
+            await UpdateAddressIns.UpdateFlatGuidAsync(userId, editableFlat, value);
             buttonText = "Изменить";
             
         }
@@ -209,64 +208,86 @@ public string PeriodTypeToText(int? val)
         StateHasChanged();
     }
 
+    async Task UpdateDown()
+    {
+        periodDate = await GetDownPeriod.GetDownPeriodsAsync(userId);
+        await grid.Reload();
+    }
+    async Task UpdateExclude()
+    {
+        excludePeriod = await GetExcludePeriod.GetExcludePeriodsAsync(userId);
+        await grid.Reload();
+    }
+    protected async Task Delete_exclude_data(ExcludePeriod data){
+        ch = 1;
+        await DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch},
+            {"dataex", data}
+        }
+        );
+        await UpdateExclude();
+        
+    }
+    protected async Task Delete_down_data(PeriodDate data){
+        ch = 2;
+        await DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        {
+            { "UserId", userId },
+            { "ch", ch},
+            {"dataper", data}
+        }
+        );
+        await UpdateDown();
+    }
+  protected async Task Add_down_data()
+    {
+        ch = 2;
+        await DialogService.OpenAsync<AddData>(
+            "Добавление записи к " + userId + " пользователю",
+            new Dictionary<string, object>
+            {
+                { "UserId", userId },
+                { "ch", ch }
+        });
+        await UpdateDown();
+    }
 
-    protected void Delete_exclude_data(ExcludePeriod data){
+
+    protected async Task Add_exclude_data(){
         ch = 1;
-        DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        await DialogService.OpenAsync<AddData>("Добавление записи к " + userId + " пользователю", new Dictionary<string, object>
         {
             { "UserId", userId },
-            { "ch", ch},
-            {"dataex", data}
+            { "ch", ch}
         }
         );
+        
+        await UpdateExclude();
     }
-    protected void Delete_down_data(PeriodDate data){
+    protected async Task Update_down_data(PeriodDate data){
         ch = 2;
-        DialogService.OpenAsync<DeleteData>("Удаление записи " + userId, new Dictionary<string, object>
+        await DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
         {
             { "UserId", userId },
             { "ch", ch},
             {"dataper", data}
         }
         );
+
+        await UpdateDown();
     }
-    protected void Add_down_data(){
-        ch = 2;
-        DialogService.OpenAsync<AddData>("Добавление записи к " + userId + " пользователю", new Dictionary<string, object>
-        {
-            { "UserId", userId },
-            { "ch", ch}
-        }
-        );
-    }
-    protected void Add_exclude_data(){
+    protected async Task Update_exclude_data(ExcludePeriod data){
         ch = 1;
-        DialogService.OpenAsync<AddData>("Добавление записи к " + userId + " пользователю", new Dictionary<string, object>
-        {
-            { "UserId", userId },
-            { "ch", ch}
-        }
-        );
-    }
-    protected void Update_down_data(PeriodDate data){
-        ch = 2;
-        DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
-        {
-            { "UserId", userId },
-            { "ch", ch},
-            {"dataper", data}
-        }
-        );
-    }
-    protected void Update_exclude_data(ExcludePeriod data){
-        ch = 1;
-        DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
+        await DialogService.OpenAsync<ChangeData>("Обновление данных " + userId + " пользователю", new Dictionary<string, object>
         {
             { "UserId", userId },
             { "ch", ch},
             {"dataex", data}
         }
         );
+        await UpdateExclude();
     }
     private async Task ExportToExcel()
     {

@@ -7,6 +7,7 @@ using FssRedact.Models;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace FssRedact.Services
 {
@@ -20,7 +21,6 @@ namespace FssRedact.Services
             _connectionString = configuration.GetConnectionString("DefaultConnection");
             _httpClient = httpClient;
         }
-
         public async Task<IEnumerable<Proactive_documents?>> GetDocumentInfoAsync()
         {
             using var connection = new NpgsqlConnection(_connectionString);
@@ -37,7 +37,7 @@ namespace FssRedact.Services
         }
 
 
-
+      
          public async Task<UserAdress?> GetAdressInfoAsync(int? userId)
         {
             using var connection = new NpgsqlConnection(_connectionString);
